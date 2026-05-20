@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
+    <link rel="manifest" href="manifest.json">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>銀髮族大腦活化中心</title>
@@ -238,6 +239,16 @@
         // 初始化顯示與啟動計時
         updateUI();
         startLobbyTimer();
+        // ==========================================
+        // 📡 啟動 PWA 離線無網遊玩功能
+        // ==========================================
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('離線功能準備就緒！', reg))
+                    .catch(err => console.log('離線功能啟動失敗', err));
+            });
+        }
     </script>
 </body>
 </html>
