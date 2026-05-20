@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大腦動一動 - 手指比數大考驗</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #F5F5DC; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; user-select: none; -webkit-user-select: none; }
+        .top-bar { display: flex; justify-content: space-between; width: 100%; max-width: 450px; align-items: center; margin-bottom: 10px; }
+        .back-btn { font-size: 16px; font-weight: bold; padding: 8px 15px; background-color: #777; color: white; border: none; border-radius: 8px; text-decoration: none; }
+        h1 { color: #333; font-size: 24px; margin: 0; }
+        
+        .difficulty-container { display: flex; gap: 8px; width: 100%; max-width: 450px; margin-bottom: 15px; }
+        .diff-btn { flex: 1; font-size: 16px; font-weight: bold; padding: 10px 0; border: 2px solid #333; border-radius: 8px; cursor: pointer; background-color: #FFF; }
+        .diff-btn.active { background-color: #4CAF50; color: white; }
+
+        .exercise-card { background-color: white; width: 100%; max-width: 450px; border: 4px solid #8B4513; border-radius: 20px; padding: 20px; box-sizing: border-box; text-align: center; box-shadow: 0 6px 10px rgba(0,0,0,0.1); }
+        .status-board { font-size: 18px; font-weight: bold; color: #555; margin-bottom: 10px; }
+        
+        /* 動作指令顯示區 */
+        .instruction-title { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 15px; }
+        .display-row { display: flex; justify-content: space-around; align-items: center; margin: 20px 0; }
+        .hand-box { background-color: #FFF8DC; border: 3px solid #DEB887; border-radius: 15px; padding: 15px; width: 40%; }
+        .hand-label { font-size: 20px; font-weight: bold; color: #8B4513; margin-bottom: 5px; }
+        .hand-emoji { font-size: 60px; margin: 5px 0; }
+        .number-text { font-size: 28px; font-weight: bold; color: #D32F2F; }
+
+        .voice-hint { font-size: 18px; color: #0066CC; font-weight: bold; margin: 15px 0; animation: blink 1.5s infinite; }
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        /* 超大確認按鈕 */
+        .action-btn { font-size: 26px; font-weight: bold; padding: 18px 0; width: 100%; background-color: #FF9800; color: white; border: 3px solid #333; border-radius: 15px; cursor: pointer; box-shadow: 0 5px 6px rgba(0,0,0,0.15); }
+        .action-btn:active { transform: scale(0.97); }
+
+        .win-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 10; }
+        .win-box { background-color: white; padding: 25px; border-radius: 20px; text-align: center; max-width: 80%; }
+        .btn { font-size: 22px; padding: 12px 35px; background-color: #FF5722; color: white; border: none; border-radius: 10px; font-weight: bold; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="index.html" class="back-btn">⬅️ 回大廳</a>
+        <h1>🖐️ 手指比數大考驗</h1>
+        <div style="width:75px;"></div>
+    </div>
+
+    <div class="difficulty-container">
+        <button class="diff-btn active" id="btn-normal" onclick="changeDifficulty('normal')">雙手同步 (簡單)</button>
+        <button class="diff-btn" id="btn-hard" onclick="changeDifficulty('hard')">左右互搏 (困難)</button>
+    </div>
+
+    <div class="exercise-card">
+        <div class="status-board" id="progressText">第 1 / 5 題</div>
+        <div class="instruction-title" id="instTitle">請伸出雙手，跟著畫面一起比！</div>
+        
+        <div class="display-row">
+            <!-- 左手指令 -->
+            <div class="hand-box" id="leftHandBox">
+                <div class="hand-label">左手</div>
+                <div class="hand-emoji" id="leftEmoji">🖐️</div>
+                <div class="number-text" id="leftNum">比出 5</div>
+            </div>
+            
+            <!-- 右手指令 -->
+            <div class="hand-box">
+                <div class="hand-label">右手</div>
+                <div class="hand-emoji" id="rightEmoji">🖐️</div>
+                <div class="number-text" id="rightNum">比出 5</div>
+            </div>
+        </div>
+
+        <div class="voice-hint" id="voiceHint">🗣️ 嘴巴要大聲唸出：「5！」</div>
+        
+        <button class="action-btn" onclick="nextQuestion()">👍 我比好了，下一題！</button>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-box">
+            <h2 style="font-size: 32px; color: #228B22; margin: 0;">🌟 伸展大成功！</h2>
+            <p style="font-size: 22px; color: #333;">手腦口同步並用，<br>大腦神經網絡全面活化！</p>
+            <button class="btn" onclick="resetGame()">再運動一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 數字對應的手勢圖標
+        const HAND_STYLES = {
+            1: { emoji: "☝️", text: "比出 1" },
+            2: { emoji: "✌️", text: "比出 2" },
+            3: { emoji: "👌", text: "比出 3" },
+            4: { emoji: "✌️✌️", text: "比出 4" }, // 簡易代用
+            5: { emoji: "🖐️", text: "比出 5" }
+        };
+
+        let currentQuestion = 1;
+        const totalQuestions = 5;
+        let mode = 'normal'; // normal: 雙手一樣, hard: 雙手不同
+
+        function changeDifficulty(newMode) {
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            if(newMode === 'normal') document.getElementById('btn-normal').classList.add('active');
+            if(newMode === 'hard') document.getElementById('btn-hard').classList.add('active');
+            mode = newMode;
+            resetGame();
+        }
+
+        function generateTask() {
+            document.getElementById('progressText').textContent = `第 ${currentQuestion} / ${totalQuestions} 題`;
+            
+            let leftNum = Math.floor(Math.random() * 5) + 1;
+            let rightNum;
+
+            if (mode === 'normal') {
+                rightNum = leftNum; // 簡單模式：左右手一樣
+                document.getElementById('instTitle').textContent = "請伸出雙手，動作要一樣喔！";
+                document.getElementById('voiceHint').textContent = `🗣️ 嘴巴大聲唸出：「 ${leftNum} ！」`;
+            } else {
+                // 困難模式：左右手故意不一樣
+                do {
+                    rightNum = Math.floor(Math.random() * 5) + 1;
+                } while (rightNum === leftNum);
+                document.getElementById('instTitle').textContent = "注意！兩手動作不一樣喔！";
+                document.getElementById('voiceHint').textContent = `🗣️ 嘴巴大聲唸出：「 左手 ${leftNum}，右手 ${rightNum} ！」`;
+            }
+
+            // 更新左手畫面
+            document.getElementById('leftEmoji').textContent = HAND_STYLES[leftNum].emoji;
+            document.getElementById('leftNum').textContent = HAND_STYLES[leftNum].text;
+            
+            // 更新右手畫面
+            document.getElementById('rightEmoji').textContent = HAND_STYLES[rightNum].emoji;
+            document.getElementById('rightNum').textContent = HAND_STYLES[rightNum].text;
+        }
+
+        function nextQuestion() {
+            if (currentQuestion < totalQuestions) {
+                currentQuestion++;
+                generateTask();
+            } else {
+                document.getElementById('winOverlay').style.display = 'flex';
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('winOverlay').style.display = 'none';
+            currentQuestion = 1;
+            generateTask();
+        }
+
+        // 啟動首題
+        generateTask();
+
+        // ==========================================
+        // 🕒 遊戲中同步累積時間功能
+        // ==========================================
+        setInterval(() => {
+            let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+            currentSeconds++;
+            localStorage.setItem('game_total_seconds', currentSeconds.toString());
+        }, 1000);
+    </script>
+</body>
+</html>
