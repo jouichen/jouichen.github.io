@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大腦動一動 - 懷舊記憶對對碰</title>
+    <title>大腦動一動 - 記憶對對碰</title>
     <style>
         body {
             font-family: "Microsoft JhengHei", "Apple LiGothic Medium", sans-serif;
@@ -26,7 +26,7 @@
             text-align: center;
         }
 
-        /* 難易度選擇區：超大按鈕方便長者點擊 */
+        /* 難易度選擇區 */
         .difficulty-container {
             display: flex;
             gap: 10px;
@@ -48,7 +48,6 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* 當前選中的難度顏色加深 */
         .diff-btn.active {
             background-color: #4CAF50;
             color: white;
@@ -63,7 +62,7 @@
             text-align: center;
         }
 
-        /* 遊戲網格，欄數會透過 JavaScript 動態改變 */
+        /* 遊戲網格 */
         .game-container {
             display: grid;
             gap: 12px;
@@ -81,24 +80,25 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 42px; /* 特大號 Emoji，看得更清楚 */
             box-shadow: 0 5px 6px rgba(0,0,0,0.15);
             position: relative;
-            overflow: hidden;
         }
 
         .card:active {
             transform: scale(0.96);
         }
 
+        /* 蓋牌時的大問號 */
         .card::before {
             content: "？";
             color: white;
             font-size: 36px;
             font-weight: bold;
             position: absolute;
-            z-index: 2;
         }
 
+        /* 翻開牌後的樣式 */
         .card.flipped {
             background-color: #FFFFFF;
             border: 3px solid #333;
@@ -108,28 +108,19 @@
             display: none;
         }
 
-        .card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: none;
-        }
-
-        .card.flipped img {
-            display: block;
-        }
-
         .card.matched {
             background-color: #E0E0E0;
             border: 3px solid #999;
             box-shadow: none;
             cursor: default;
+            color: #999; /* 讓答對的 Emoji 變淡，突出還沒答對的 */
         }
         
-        .card.matched img {
-            opacity: 0.5;
+        .card.matched::before {
+            display: none;
         }
 
+        /* 通關彈出視窗 */
         .win-overlay {
             display: none;
             position: fixed;
@@ -176,7 +167,7 @@
 
     <h1>大腦動一動 - 記憶對對碰</h1>
 
-    <!-- 難易度選擇按鈕 -->
+    <!-- 難易度選擇 -->
     <div class="difficulty-container">
         <button class="diff-btn" id="btn-easy" onclick="changeDifficulty('easy')">簡單 (6張)</button>
         <button class="diff-btn active" id="btn-normal" onclick="changeDifficulty('normal')">普通 (12張)</button>
@@ -197,22 +188,9 @@
 
     <script>
         // ==========================================
-        // 【在這裡修改您的圖片檔名或網址】
-        // 為了應付「困難」難度，這裡建議放滿 10 張照片。
-        // 如果選簡單或普通，系統會自動抓取前幾張來用。
+        // 【長者專屬的 10 個 Emoji 圖標】
         // ==========================================
-        const ALL_IMAGES = [
-            "photo1.jpg", // 簡單難度會用前 3 張
-            "photo2.jpg",
-            "photo3.jpg",
-            "photo4.jpg", // 普通難度會用前 6 張
-            "photo5.jpg",
-            "photo6.jpg",
-            "photo7.jpg", // 困難難度會用到 10 張
-            "photo8.jpg",
-            "photo9.jpg",
-            "photo10.jpg"
-        ];
+        const ALL_ITEMS = ["🍎", "🍉", "🍌", "☎️", "🫖", "🍚", "🚂", "🚗", "🌻", "⛰️"];
 
         // 難易度組態設定
         const DIFF_CONFIG = {
@@ -232,11 +210,9 @@
         const scoreBoard = document.getElementById('scoreBoard');
         const winOverlay = document.getElementById('winOverlay');
 
-        // 切換難易度功能
         function changeDifficulty(level) {
-            if (isWaiting) return; // 動畫進行中不給切換
+            if (isWaiting) return;
             
-            // 切換按鈕的高亮狀態
             document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`btn-${level}`).classList.add('active');
             
@@ -247,14 +223,14 @@
         function initGame() {
             const config = DIFF_CONFIG[currentDifficulty];
             
-            // 根據難度動態調整排版欄數 (CSS Grid)
+            // 動態改變排版欄數
             gameContainer.style.gridTemplateColumns = `repeat(${config.cols}, 1fr)`;
 
-            // 依據難度所需的「配對組數」，切取對應數量的照片
-            let activeImages = ALL_IMAGES.slice(0, config.pairs);
+            // 根據難度抓取對應數量的 Emoji
+            let activeItems = ALL_ITEMS.slice(0, config.pairs);
             
-            // 複製成兩兩一組
-            let list = [...activeImages, ...activeImages];
+            // 兩兩一組並打亂順序
+            let list = [...activeItems, ...activeItems];
             list.sort(() => Math.random() - 0.5);
 
             cardsData = list.map((value, index) => ({
@@ -269,11 +245,6 @@
                 const cardElement = document.createElement('div');
                 cardElement.classList.add('card');
                 cardElement.dataset.id = card.id;
-                
-                const imgElement = document.createElement('img');
-                imgElement.src = card.value;
-                imgElement.alt = "記憶圖片";
-                cardElement.appendChild(imgElement);
 
                 cardElement.addEventListener('click', () => handleCardClick(card.id, cardElement));
                 gameContainer.appendChild(cardElement);
@@ -289,6 +260,7 @@
 
             cardsData[id].isFlipped = true;
             element.classList.add('flipped');
+            element.textContent = cardsData[id].value; // 顯示 Emoji
             selectedCards.push({ id, element });
 
             if (selectedCards.length === 2) {
@@ -323,6 +295,8 @@
                     cardsData[card2.id].isFlipped = false;
                     card1.element.classList.remove('flipped');
                     card2.element.classList.remove('flipped');
+                    card1.element.textContent = ''; // 清空內容顯示問號
+                    card2.element.textContent = '';
                     selectedCards = [];
                     isWaiting = false;
                 }, 1200);
@@ -339,7 +313,6 @@
             initGame();
         }
 
-        // 首次啟動
         initGame();
     </script>
 </body>
