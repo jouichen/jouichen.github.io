@@ -93,6 +93,66 @@
     </div>
 
     <script>
+        // 🎵 網頁立體音效產生器
+const AudioEffects = {
+    ctx: null,
+
+    init() {
+        if (!this.ctx) {
+            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    },
+
+    // 🦟 模擬蚊子嗡嗡聲 (持續的高頻震盪音)
+    playMosquito() {
+        this.init();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+        
+        // 蚊子翅膀拍動的高頻率 (大約 450Hz - 600Hz 之間微幅晃動)
+        osc.type = 'sawtooth'; 
+        osc.frequency.setValueAtTime(500, this.ctx.currentTime);
+        // 加上一點起伏模擬蚊子飛來飛去
+        osc.frequency.linearRampToValueAtTime(550, this.ctx.currentTime + 0.5);
+        osc.frequency.linearRampToValueAtTime(480, this.ctx.currentTime + 1.0);
+
+        // 聲音調小聲一點，不然會太吵
+        gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.0); // 1秒後消失
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        
+        osc.start();
+        osc.stop(this.ctx.currentTime + 1.0);
+    },
+
+    // 💥 模擬拍打、拍蚊子的聲音 (短促的低頻衝擊爆音)
+    playSlap() {
+        this.init();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+
+        let osc = this.ctx.createOscillator();
+        let gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        // 從高頻瞬間掉到低頻，模擬重擊拍打聲
+        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+
+        // 音量瞬間爆發然後快速歸零
+        gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.15);
+    }
+};
         let score = 0;
         const targetScore = 10;
         let currentHole = -1;
@@ -109,6 +169,8 @@
         }
 
         function showMosquito() {
+            // 讓手機發出蚊子飛的嗡嗡聲
+AudioEffects.playMosquito();
             canHit = true;
             // 隱藏所有格子裡的蚊子與特效
             for (let i = 0; i < 9; i++) {
@@ -132,6 +194,8 @@
 
             // 成功擊中！
             score++;
+            // 讓手機發出清脆的打中音效
+AudioEffects.playSlap();
             document.getElementById(`m${holeIndex}`).style.display = 'none';
             document.getElementById(`h${holeIndex}`).style.display = 'block'; // 秀出爆炸圖案
             
