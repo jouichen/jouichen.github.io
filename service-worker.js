@@ -1,4 +1,4 @@
-const CACHE_NAME = 'brain-gym-v1';
+const CACHE_NAME = 'brain-gym-v2';
 // 這裡列出所有需要「離線下載」到手機裡的檔案清單
 const ASSETS_TO_CACHE = [
   'index.html',
@@ -6,6 +6,7 @@ const ASSETS_TO_CACHE = [
   'game_math.html',
   'game_reaction.html',
   'game_finger.html',
+  'game_language.html',
   'manifest.json'
 ];
 
