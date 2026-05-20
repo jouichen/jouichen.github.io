@@ -82,6 +82,14 @@
         function updateScore() { const config = DIFF_CONFIG[currentDifficulty]; scoreBoard.textContent = `翻牌次數：${clicks} 次 | 已成功：${matches} / ${config.pairs}`; }
         function resetGame() { winOverlay.style.display = 'none'; initGame(); }
         initGame();
+// ==========================================
+// 🕒 遊戲中同步累積時間功能
+// ==========================================
+setInterval(() => {
+    let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+    currentSeconds++;
+    localStorage.setItem('game_total_seconds', currentSeconds.toString());
+}, 1000);
     </script>
 </body>
 </html>
