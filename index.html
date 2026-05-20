@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大腦動一動 - 懷舊記憶對對碰</title>
+    <style>
+        /* 適合長者的視覺設計：米色背景不刺眼，字體超大 */
+        body {
+            font-family: "Microsoft JhengHei", "Apple LiGothic Medium", sans-serif;
+            background-color: #F5F5DC;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin: 10px 0 5px 0;
+            text-align: center;
+        }
+
+        .score-board {
+            font-size: 20px;
+            font-weight: bold;
+            color: #555;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        /* 遊戲卡牌網格：針對手機與平板自適應 */
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* 改為 3x4 擺放，直式螢幕更適合 */
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* 卡牌基礎樣式：夠大、圓角、有陰影方便長者辨識 */
+        .card {
+            aspect-ratio: 1 / 1; /* 保持正方形 */
+            background-color: #4682B4; /* 鋼鐵藍 */
+            border-radius: 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px; /* 超大 Emoji 圖示 */
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+            transition: transform 0.2s;
+            position: relative;
+            transform-style: preserve-3d;
+        }
+
+        /* 點擊觸控視覺回饋 */
+        .card:active {
+            transform: scale(0.95);
+        }
+
+        /* 蓋牌時顯示的大問號 */
+        .card::before {
+            content: "？";
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            position: absolute;
+        }
+
+        /* 翻開牌後的樣式 */
+        .card.flipped {
+            background-color: #FFFFFF;
+            border: 4px solid #333;
+            transform: rotateY(180px); /* 翻轉動畫效果 */
+        }
+
+        .card.flipped::before {
+            display: none; /* 隱藏問號 */
+        }
+
+        /* 配對成功後的樣式 */
+        .card.matched {
+            background-color: #E0E0E0;
+            border: 4px solid #999;
+            box-shadow: none;
+            cursor: default;
+        }
+        .card.matched::before {
+            display: none;
+        }
+
+        /* 成功通關的彈出視窗 */
+        .win-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .win-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            max-width: 80%;
+        }
+
+        .win-box h2 {
+            font-size: 32px;
+            color: #228B22;
+            margin-top: 0;
+        }
+
+        /* 特大號重新開始按鈕，方便手抖或視力不佳的長者點擊 */
+        .btn {
+            font-size: 24px;
+            padding: 15px 40px;
+            background-color: #FF5722;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .btn:active {
+            background-color: #E64A19;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>大腦動一動 - 記憶對對碰</h1>
+    <div class="score-board" id="scoreBoard">翻牌次數：0 次 | 已成功：0 / 6</div>
+
+    <div class="game-container" id="gameContainer"><!-- 卡牌會由 JavaScript 動態產生 --></div>
+
+    <!-- 通關慶祝視窗 -->
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-box">
+            <h2>👍 太棒了！</h2>
+            <p style="font-size: 22px; color: #333;">您成功完成了大腦活化運動！</p>
+            <button class="btn" onclick="resetGame()">再玩一次</button>
+        </div>
+    </div>
+
+    <script>
+        // 精選長者日常生活、懷舊熟悉的 Emoji 代替文字，提升趣味性與圖像刺激
+        // 🍎蘋果、🍉西瓜、☎️老電話、🫖茶壺、🍚米飯、🚂火車
+        const ITEMS = ["🍎", "🍉", "☎️", "🫖", "🍚", "🚂"];
+        let cardsData = [];
+        let selectedCards = [];
+        let clicks = 0;
+        let matches = 0;
+        let isWaiting = false;
+
+        const gameContainer = document.getElementById('gameContainer');
+        const scoreBoard = document.getElementById('scoreBoard');
+        const winOverlay = document.getElementById('winOverlay');
+
+        // 初始化遊戲
+        function initGame() {
+            // 複製成兩兩一組，共12張
+            let list = [...ITEMS, ...ITEMS];
+            // 洗牌演算法
+            list.sort(() => Math.random() - 0.5);
+
+            cardsData = list.map((value, index) => ({
+                id: index,
+                value: value,
+                isFlipped: false,
+                isMatched: false
+            }));
+
+            gameContainer.innerHTML = '';
+            cardsData.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.id = card.id;
+                // 綁定觸控與點擊事件，確保平板反應靈敏
+                cardElement.addEventListener('click', () => handleCardClick(card.id, cardElement));
+                gameContainer.appendChild(cardElement);
+            });
+
+            clicks = 0;
+            matches = 0;
+            updateScore();
+        }
+
+        // 點擊卡牌邏輯
+        function handleCardClick(id, element) {
+            // 如果正在等待翻轉動畫、點到已翻開的、或點到已配對的，就沒有反應
+            if (isWaiting || cardsData[id].isFlipped || cardsData[id].isMatched) return;
+
+            // 翻開牌
+            cardsData[id].isFlipped = true;
+            element.classList.add('flipped');
+            element.textContent = cardsData[id].value; // 顯示圖案
+            selectedCards.push({ id, element });
+
+            if (selectedCards.length === 2) {
+                clicks++;
+                updateScore();
+                checkMatch();
+            }
+        }
+
+        // 檢查是否配對成功
+        function checkMatch() {
+            const [card1, card2] = selectedCards;
+
+            if (cardsData[card1.id].value === cardsData[card2.id].value) {
+                // 配對成功
+                cardsData[card1.id].isMatched = true;
+                cardsData[card2.id].isMatched = true;
+                card1.element.classList.add('matched');
+                card2.element.classList.add('matched');
+                selectedCards = [];
+                matches++;
+                updateScore();
+
+                // 檢查是否全破
+                if (matches === ITEMS.length) {
+                    setTimeout(() => {
+                        winOverlay.style.display = 'flex';
+                    }, 500);
+                }
+            } else {
+                // 配對失敗，留給長者 1.2 秒的記憶時間，然後蓋回去
+                isWaiting = true;
+                setTimeout(() => {
+                    cardsData[card1.id].isFlipped = false;
+                    cardsData[card2.id].isFlipped = false;
+                    card1.element.classList.remove('flipped');
+                    card2.element.classList.remove('flipped');
+                    card1.element.textContent = ''; // 清空圖案顯示問號
+                    card2.element.textContent = '';
+                    selectedCards = [];
+                    isWaiting = false;
+                }, 1200);
+            }
+        }
+
+        function updateScore() {
+            scoreBoard.textContent = `翻牌次數：${clicks} 次 | 已成功：${matches} / ${ITEMS.length}`;
+        }
+
+        function resetGame() {
+            winOverlay.style.display = 'none';
+            initGame();
+        }
+
+        // 啟動遊戲
+        initGame();
+    </script>
+</body>
+</html>
