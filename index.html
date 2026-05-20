@@ -9,62 +9,229 @@
             font-family: "Microsoft JhengHei", sans-serif;
             background-color: #F5F5DC;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 90vh;
+            justify-content: flex-start;
+            min-height: 95vh;
+            user-select: none;
+            -webkit-user-select: none;
         }
         h1 {
-            font-size: 32px;
+            font-size: 30px;
             color: #333;
-            margin-bottom: 10px;
+            margin: 10px 0 5px 0;
             text-align: center;
         }
-        p {
+        
+        /* -------------------------------------
+           ✨ 全新設計：今日健康集點卡區 ✨
+        ------------------------------------- */
+        .status-card {
+            background-color: #FFF;
+            border: 4px solid #8B4513; /* 古樸的木質調邊框 */
+            border-radius: 20px;
+            padding: 15px;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
+            text-align: center;
+            margin-bottom: 20px;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+        }
+        .status-title {
             font-size: 20px;
-            color: #666;
-            margin-bottom: 30px;
-            text-align: center;
+            font-weight: bold;
+            color: #8B4513;
+            margin-bottom: 8px;
         }
+        .timer-display {
+            font-size: 28px;
+            font-weight: bold;
+            color: #E65100; /* 亮眼橘色 */
+            margin: 5px 0;
+        }
+        
+        /* 蓋印章集點卡樣式 */
+        .stamp-grid {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0 5px 0;
+        }
+        .stamp-slot {
+            width: 65px;
+            height: 65px;
+            border: 3px dashed #999;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #999;
+            font-weight: bold;
+            position: relative;
+            background-color: #FAFAFA;
+        }
+        /* 當累積滿10、20分鐘，觸發蓋章 */
+        .stamp-slot.stamped {
+            border: 4px solid #4CAF50;
+            color: #4CAF50;
+            background-color: #E8F5E9;
+        }
+        .stamp-slot.stamped::after {
+            content: "✔"; /* 綠色大勾勾印章 */
+            font-size: 36px;
+            position: absolute;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .target-hint {
+            font-size: 16px;
+            color: #666;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+
+        /* -------------------------------------
+           遊戲選單區
+        ------------------------------------- */
         .menu-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             width: 100%;
             max-width: 400px;
         }
-        /* 超大號選單按鈕 */
         .lobby-btn {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
-            padding: 25px 20px;
+            padding: 20px 15px;
             border: 4px solid #333;
             border-radius: 20px;
             cursor: pointer;
             color: white;
             text-decoration: none;
             text-align: center;
-            box-shadow: 0 8px 10px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
             transition: transform 0.1s;
         }
         .lobby-btn:active {
-            transform: scale(0.95);
+            transform: scale(0.96);
         }
-        .btn-game1 { background-color: #4682B4; } /* 鋼鐵藍 */
-        .btn-game2 { background-color: #E91E63; } /* 桃紅色 */
+        .btn-game1 { background-color: #4682B4; }
+        .btn-game2 { background-color: #E91E63; }
+        
+        /* 重置按鈕（方便測試或新的一天手動重置） */
+        .reset-btn {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #888;
+            background: none;
+            border: none;
+            text-decoration: underline;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
     <h1>🧠 大腦動一動中心</h1>
-    <p>每天玩一玩，健康有活力！請選擇遊戲：</p>
-
-    <div class="menu-container">
-        <a href="game_memory.html" class="lobby-btn btn-game1">🧩 遊戲一：圖標對對碰<br><span style="font-size:16px; font-weight:normal;">(訓練長期與短期記憶)</span></a>
-        <a href="game_math.html" class="lobby-btn btn-game2">🛒 遊戲二：買菜算錢大考驗<br><span style="font-size:16px; font-weight:normal;">(訓練邏輯與生活計算力)</span></a>
+    
+    <!-- 今日健康集點卡 -->
+    <div class="status-card">
+        <div class="status-title">📅 今日大腦運動進度</div>
+        <div class="timer-display" id="totalTimeDisplay">今日已玩：0 分 0 秒</div>
+        
+        <!-- 集點卡：分成 10 分鐘章跟 20 分鐘達標章 -->
+        <div class="stamp-grid">
+            <div class="stamp-slot" id="stamp-10">10分鐘</div>
+            <div class="stamp-slot" id="stamp-20">20分鐘</div>
+        </div>
+        
+        <div class="target-hint" id="targetHint">再玩 20 分鐘就能成功蓋章喔！</div>
     </div>
 
+    <div class="menu-container">
+        <!-- 點擊進入遊戲時，網頁會把目前在大廳累積的時間帶過去 -->
+        <a href="#" onclick="enterGame('game_memory.html')" class="lobby-btn btn-game1">🧩 遊戲一：圖標對對碰<br><span style="font-size:15px; font-weight:normal;">(訓練長期與短期記憶)</span></a>
+        <a href="#" onclick="enterGame('game_math.html')" class="lobby-btn btn-game2">🛒 遊戲二：買菜算錢大考驗<br><span style="font-size:15px; font-weight:normal;">(訓練邏輯與生活計算力)</span></a>
+    </div>
+
+    <button class="reset-btn" onclick="clearTodayProgress()">重新開始新的一天</button>
+
+    <script>
+        // 取得今天日期（格式如 "2026-05-20"），用來判斷是不是新的一天
+        const todayStr = new Date().toLocaleDateString();
+        
+        // 讀取進度，如果是新的一天就重置為0
+        if (localStorage.getItem('game_date') !== todayStr) {
+            localStorage.setItem('game_date', todayStr);
+            localStorage.setItem('game_total_seconds', '0');
+        }
+
+        let totalSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+        let lobbyTimer;
+
+        function updateUI() {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            document.getElementById('totalTimeDisplay').textContent = `今日已玩：${minutes} 分 ${seconds} 秒`;
+
+            const stamp10 = document.getElementById('stamp-10');
+            const stamp20 = document.getElementById('stamp-20');
+            const hint = document.getElementById('targetHint');
+
+            // 檢查 10 分鐘進度 (600秒)
+            if (totalSeconds >= 600) {
+                stamp10.classList.add('stamped');
+                stamp10.textContent = "";
+            } else {
+                stamp10.classList.remove('stamped');
+                stamp10.textContent = "10分鐘";
+            }
+
+            // 檢查 20 分鐘進度 (1200秒)
+            if (totalSeconds >= 1200) {
+                stamp20.classList.add('stamped');
+                stamp20.textContent = "";
+                hint.innerHTML = "<span style='color:#228B22; font-size:18px;'>🎉 太棒了！今日運動已達標！</span>";
+            } else {
+                stamp20.classList.remove('stamped');
+                stamp20.textContent = "20分鐘";
+                const remainingMin = Math.ceil((1200 - totalSeconds) / 60);
+                hint.textContent = `再激勵大腦 ${remainingMin} 分鐘就能成功達標！`;
+            }
+        }
+
+        // 當在大廳停留時，也默默幫他算時間（或者長者在看集點卡時）
+        function startLobbyTimer() {
+            lobbyTimer = setInterval(() => {
+                totalSeconds++;
+                localStorage.setItem('game_total_seconds', totalSeconds.toString());
+                updateUI();
+            }, 1000);
+        }
+
+        // 跳轉到遊戲頁面
+        function enterGame(pageUrl) {
+            clearInterval(lobbyTimer);
+            window.location.href = pageUrl;
+        }
+
+        function clearTodayProgress() {
+            if (confirm("確定要清除今天的點數與時間，重新計算嗎？")) {
+                totalSeconds = 0;
+                localStorage.setItem('game_total_seconds', '0');
+                updateUI();
+            }
+        }
+
+        // 初始化顯示與啟動計時
+        updateUI();
+        startLobbyTimer();
+    </script>
 </body>
 </html>
