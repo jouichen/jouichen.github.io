@@ -175,7 +175,7 @@
         let totalSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
         let lobbyTimer;
 
-        function updateUI() {
+ function updateUI() {
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
             document.getElementById('totalTimeDisplay').textContent = `今日已玩：${minutes} 分 ${seconds} 秒`;
@@ -187,20 +187,24 @@
             // 檢查 10 分鐘進度 (600秒)
             if (totalSeconds >= 600) {
                 stamp10.classList.add('stamped');
-                stamp10.textContent = "";
+                stamp10.textContent = "🌸"; // 10分鐘先蓋一朵小櫻花
+                stamp10.style.fontSize = "36px";
             } else {
                 stamp10.classList.remove('stamped');
                 stamp10.textContent = "10分鐘";
+                stamp10.style.fontSize = "14px";
             }
 
             // 檢查 20 分鐘進度 (1200秒)
             if (totalSeconds >= 1200) {
                 stamp20.classList.add('stamped');
-                stamp20.textContent = "";
-                hint.innerHTML = "<span style='color:#228B22; font-size:18px;'>🎉 太棒了！今日運動已達標！</span>";
+                stamp20.textContent = "💮"; // 20分鐘大功告成！蓋上開運大紅花章
+                stamp20.style.fontSize = "40px"; // 讓大紅花印章特別醒目
+                hint.innerHTML = "<span style='color:#D32F2F; font-size:20px; font-weight:bold;'>🎉 恭喜！今日大腦運動大成功！</span>";
             } else {
                 stamp20.classList.remove('stamped');
                 stamp20.textContent = "20分鐘";
+                stamp20.style.fontSize = "14px";
                 const remainingMin = Math.ceil((1200 - totalSeconds) / 60);
                 hint.textContent = `再激勵大腦 ${remainingMin} 分鐘就能成功達標！`;
             }
