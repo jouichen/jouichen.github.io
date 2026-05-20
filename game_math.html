@@ -137,6 +137,14 @@
 
         // 啟動第一題
         generateQuestion();
+// ==========================================
+// 🕒 遊戲中同步累積時間功能
+// ==========================================
+setInterval(() => {
+    let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+    currentSeconds++;
+    localStorage.setItem('game_total_seconds', currentSeconds.toString());
+}, 1000);
     </script>
 </body>
 </html>
