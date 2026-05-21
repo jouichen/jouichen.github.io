@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大腦動一動 - 雀聖聽牌大考驗</title>
+    <style>
+        body { font-family: "Microsoft JhengHei", sans-serif; background-color: #111d14; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; user-select: none; -webkit-user-select: none; color: #fff; }
+        .top-bar { display: flex; justify-content: space-between; width: 100%; max-width: 430px; align-items: center; margin-bottom: 15px; }
+        .back-btn { font-size: 18px; font-weight: bold; padding: 10px 18px; background-color: #444; color: white; border: none; border-radius: 12px; text-decoration: none; box-shadow: 0 4px rgba(0,0,0,0.3); }
+        h1 { color: #FFD700; font-size: 26px; margin: 0; text-shadow: 1px 1px #000; }
+        
+        .game-card { background-color: #1e3d29; width: 100%; max-width: 430px; border: 4px solid #FFD700; border-radius: 20px; padding: 20px; box-sizing: border-box; text-align: center; box-shadow: 0 6px 12px rgba(0,0,0,0.5); }
+        .status-board { font-size: 20px; font-weight: bold; color: #A3E635; margin-bottom: 15px; }
+        
+        /* 牌局牌面顯示區 */
+        .mahjong-table { background-color: #0f2619; border: 3px solid #FFD700; border-radius: 15px; padding: 25px 15px; margin-bottom: 20px; display: flex; justify-content: center; gap: 10px; min-height: 90px; align-items: center; }
+        .mj-tile { background-color: #f5f5f5; color: #000; border: 3px solid #ccc; border-bottom: 8px solid #b5b5b5; border-radius: 8px; width: 65px; height: 90px; font-size: 36px; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3); text-shadow: 1px 1px #fff; }
+        .mj-tile.red { color: #d32f2f; }
+        .mj-tile.green { color: #388e3c; }
+
+        /* 選項區 */
+        .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 15px; }
+        .option-card { font-size: 24px; font-weight: bold; padding: 15px 5px; border: 3px solid #FFD700; border-radius: 15px; background-color: #f5f5f5; color: #111; cursor: pointer; box-shadow: 0 5px rgba(0,0,0,0.3); text-align: center; }
+        .option-card:active { transform: translateY(3px); box-shadow: none; }
+
+        .feedback { font-size: 26px; font-weight: bold; margin-top: 15px; height: 35px; text-shadow: 1px 1px #000; }
+        
+        /* 破關畫面 */
+        .win-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.85); justify-content: center; align-items: center; z-index: 10; }
+        .win-box { background-color: #1e3d29; border: 4px solid #FFD700; padding: 30px 20px; border-radius: 20px; text-align: center; max-width: 85%; width: 360px; color: #fff; }
+        .btn { font-size: 22px; font-weight: bold; padding: 15px 0; color: white; border: none; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px rgba(0,0,0,0.3); box-sizing: border-box; width: 100%; }
+        .btn:active { transform: translateY(2px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="index.html" class="back-btn">⬅️ 回大廳</a>
+        <h1>🀄 雀聖聽牌大考驗</h1>
+        <div style="width:40px;"></div>
+    </div>
+
+    <div class="game-card">
+        <div class="status-board" id="progressText">第一局進牌 / 共五局</div>
+        <div style="font-size: 18px; color: #FFD700; font-weight: bold; margin-bottom: 10px;">💡 請摸這張牌，胡牌聽哪一張？</div>
+        
+        <div class="mahjong-table" id="mahjongTable"></div>
+        
+        <div class="options-grid" id="optionsGrid"></div>
+        <div class="feedback" id="feedbackText"></div>
+    </div>
+
+    <div class="win-overlay" id="winOverlay">
+        <div class="win-box">
+            <h2 style="font-size: 36px; color: #FFD700; margin: 0 0 10px 0;">🀄 恭喜自摸胡牌！</h2>
+            <p style="font-size: 22px; color: #A3E635; margin-bottom: 25px; line-height: 1.5;">連莊滿貫，牌技驚人！<br>成功觸發大腦邏輯推理區！</p>
+            
+            <div style="display: flex; gap: 15px; justify-content: center;">
+                <button class="btn" style="background-color: #388e3c; flex: 1;" onclick="resetGame()">🟢 再連一莊</button>
+                <a href="index.html" class="btn" style="background-color: #d32f2f; text-decoration: none; flex: 1; display: inline-block; line-height: 26px;">🔴 下桌回大廳</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🀄 精心挑選適合辨識的經典麻將聽牌題庫（文字加上顏色標註）
+        const MAHJONG_BANK = [
+            { tiles: ["三萬", "四萬"], style: ["red", "red"], options: ["二萬", "五萬", "八萬"], correct: 1, text: "湊成 三、四、五萬 順子！" },
+            { tiles: ["七條", "八條"], style: ["green", "green"], options: ["六條", "九條", "五條"], correct: 1, text: "湊成 七、八、九條 順子！" },
+            { tiles: ["一筒", "三筒"], style: ["", ""], options: ["二筒", "四筒", "五筒"], correct: 0, text: "嵌張！補滿 一、二、三筒 順子！" },
+            { tiles: ["八筒", "九筒"], style: ["", ""], options: ["六筒", "七筒", "五筒"], correct: 1, text: "湊成 七、八、九筒 順子！" },
+            { tiles: ["白板", "白板"], style: ["", ""], options: ["白板", "中", "發"], correct: 0, text: "對倒！摸到第三張 白板 湊成刻子！" },
+            { tiles: ["五萬", "六萬"], style: ["red", "red"], options: ["四萬", "七萬", "三萬"], correct: 1, text: "湊成 五、六、七萬 順子！" },
+            { tiles: ["四條", "六條"], style: ["green", "green"], options: ["五條", "三條", "七條"], correct: 0, text: "嵌張！補滿 四、五、六條 順子！" },
+            { tiles: ["發財", "發財"], style: ["green", "green"], options: ["發財", "紅中", "東風"], correct: 0, text: "碰碰胡！抓到第三張 發財 湊成刻子！" }
+        ];
+
+        let currentQuestion = 1;
+        const totalQuestions = 5;
+        let currentQuizSet = [];
+        let canClick = true;
+
+        function prepareGameQuestions() {
+            let shuffled = [...MAHJONG_BANK].sort(() => Math.random() - 0.5);
+            currentQuizSet = shuffled.slice(0, totalQuestions);
+        }
+
+        function generateQuestion() {
+            canClick = true;
+            document.getElementById('feedbackText').textContent = "";
+            document.getElementById('progressText').textContent = `第 ${currentQuestion} / ${totalQuestions} 局`;
+
+            let currentItem = currentQuizSet[currentQuestion - 1];
+
+            // 1. 渲染麻將牌面
+            const table = document.getElementById('mahjongTable');
+            table.innerHTML = '';
+            currentItem.tiles.forEach((tileText, idx) => {
+                const div = document.createElement('div');
+                div.classList.add('mj-tile');
+                if (currentItem.style[idx]) div.classList.add(currentItem.style[idx]);
+                
+                // 取第一個字或精簡字顯示在牌面上（例如：三萬 -> 三）
+                div.textContent = tileText.charAt(0);
+                table.appendChild(div);
+            });
+
+            // 2. 渲染下方聽牌按鈕
+            const grid = document.getElementById('optionsGrid');
+            grid.innerHTML = '';
+            currentItem.options.forEach((optText, index) => {
+                const btn = document.createElement('button');
+                btn.classList.add('option-card');
+                btn.textContent = optText;
+                
+                let isCorrect = (index === currentItem.correct);
+                btn.onclick = () => checkAnswer(isCorrect, btn, currentItem.text);
+                grid.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(isCorrect, buttonElement, solutionText) {
+            if (!canClick) return;
+            canClick = false;
+
+            const feedback = document.getElementById('feedbackText');
+            if (isCorrect) {
+                feedback.style.color = "#A3E635";
+                feedback.textContent = `🎉 胡牌！${solutionText}`;
+                playCorrectSound();
+                buttonElement.style.backgroundColor = "#C8E6C9";
+                
+                setTimeout(() => {
+                    if (currentQuestion < totalQuestions) {
+                        currentQuestion++;
+                        generateQuestion();
+                    } else {
+                        document.getElementById('winOverlay').style.display = 'flex';
+                    }
+                }, 2000);
+            } else {
+                feedback.style.color = "#EF4444";
+                feedback.textContent = "❌ 相公囉！這張沒胡，再看仔細！";
+                buttonElement.style.backgroundColor = "#FFCDD2";
+                setTimeout(() => {
+                    buttonElement.style.backgroundColor = "#f5f5f5";
+                    feedback.textContent = "";
+                    canClick = true;
+                }, 1200);
+            }
+        }
+
+        function resetGame() {
+            document.getElementById('winOverlay').style.display = 'none';
+            currentQuestion = 1;
+            prepareGameQuestions();
+            generateQuestion();
+        }
+
+        function playCorrectSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                let osc1 = ctx.createOscillator();
+                let gain1 = ctx.createGain();
+                osc1.type = 'sine'; osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+                gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                osc1.connect(gain1); gain1.connect(ctx.destination);
+                osc1.start(); osc1.stop(ctx.currentTime + 0.1);
+
+                setTimeout(() => {
+                    let osc2 = ctx.createOscillator();
+                    let gain2 = ctx.createGain();
+                    osc2.type = 'sine'; osc2.frequency.setValueAtTime(659.25, ctx.currentTime);
+                    gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                    osc2.connect(gain2); gain2.connect(ctx.destination);
+                    osc2.start(); osc2.stop(ctx.currentTime + 0.25);
+                }, 80);
+            } catch(e) {}
+        }
+
+        prepareGameQuestions();
+        generateQuestion();
+
+        setInterval(() => {
+            let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+            currentSeconds++;
+            localStorage.setItem('game_total_seconds', currentSeconds.toString());
+        }, 1000);
+    </script>
+</body>
+</html>
