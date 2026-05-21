@@ -94,197 +94,198 @@
             </div>
         </div>
     </div>
-
-    <script>
-        // 🎵 網頁立體音效產生器 (標準媒體通道，服從靜音模式)
-        const AudioEffects = {
-            ctx: null,
-            init() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-            },
-            playCorrect() {
-                this.init();
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-
-                let osc1 = this.ctx.createOscillator();
-                let gain1 = this.ctx.createGain();
-                osc1.type = 'sine';
-                osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
-                gain1.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                gain1.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-                osc1.connect(gain1);
-                gain1.connect(this.ctx.destination);
-                osc1.start();
-                osc1.stop(this.ctx.currentTime + 0.1);
-
-                setTimeout(() => {
-                    let osc2 = this.ctx.createOscillator();
-                    let gain2 = this.ctx.createGain();
-                    osc2.type = 'sine';
-                    osc2.frequency.setValueAtTime(659.25, this.ctx.currentTime); // E5
-                    gain2.gain.setValueAtTime(0.2, this.ctx.currentTime);
-                    gain2.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
-                    osc2.connect(gain2);
-                    gain2.connect(this.ctx.destination);
-                    osc2.start();
-                    osc2.stop(this.ctx.currentTime + 0.25);
-                }, 80);
+    
+      <script>
+    // 🎵 網頁立體音效產生器 (標準媒體通道，服從靜音模式)
+    const AudioEffects = {
+        ctx: null,
+        init() {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
             }
-        };
+        },
+        playCorrect() {
+            this.init();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
 
-        let currentQuestion = 1;
-        const totalQuestions = 3;
-        let targetHour = 12;
-        let targetMinute = 0;
-        let canClick = true;
-        let currentLevel = 'normal';
+            // 💡 修正處：將原本漏掉的 ctx 改為 this.ctx，避免瀏覽器報錯卡死
+            const now = this.ctx.currentTime;
 
-        function changeDifficulty(level) {
-            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn-${level}`).classList.add('active');
-            currentLevel = level;
-            resetGame();
+            let osc1 = this.ctx.createOscillator();
+            let gain1 = this.ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(523.25, now); // C5
+            gain1.gain.setValueAtTime(0.2, now);
+            gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc1.connect(gain1);
+            gain1.connect(this.ctx.destination);
+            osc1.start();
+            osc1.stop(now + 0.1);
+
+            setTimeout(() => {
+                let osc2 = this.ctx.createOscillator();
+                let gain2 = this.ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(659.25, this.ctx.currentTime); // E5
+                gain2.gain.setValueAtTime(0.2, this.ctx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                osc2.connect(gain2);
+                gain2.connect(this.ctx.destination);
+                osc2.start();
+                osc2.stop(this.ctx.currentTime + 0.25);
+            }, 80);
+        }
+    };
+
+    let currentQuestion = 1;
+    const totalQuestions = 3;
+    let targetHour = 12;
+    let targetMinute = 0;
+    let canClick = true;
+    let currentLevel = 'normal';
+
+    function changeDifficulty(level) {
+        document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`btn-${level}`).classList.add('active');
+        currentLevel = level;
+        resetGame();
+    }
+
+    // 格式化時間文字 (例如 05:05)
+    function formatTime(h, m) {
+        let hourStr = h.toString();
+        let minStr = m < 10 ? '0' + m : m.toString();
+        return `${hourStr} 點 ${minStr} 分`;
+    }
+
+    function generateQuestion() {
+        canClick = true;
+        document.getElementById('feedbackText').textContent = "";
+        document.getElementById('progress').textContent = `第 ${currentQuestion} / ${totalQuestions} 題`;
+
+        // 隨機產生目標小時 (1 ~ 12)
+        targetHour = Math.floor(Math.random() * 12) + 1;
+        
+        // 根據難易度產生目標分鐘
+        if (currentLevel === 'easy') {
+            targetMinute = Math.random() < 0.5 ? 0 : 30;
+        } else if (currentLevel === 'normal') {
+            targetMinute = Math.floor(Math.random() * 12) * 5;
+        } else {
+            targetMinute = Math.floor(Math.random() * 60);
         }
 
-        // 格式化時間文字 (例如 05:05)
-        function formatTime(h, m) {
-            let hourStr = h.toString();
-            let minStr = m < 10 ? '0' + m : m.toString();
-            return `${hourStr} 點 ${minStr} 分`;
+        // 🔮 計算指針旋轉角度
+        let minuteAngle = targetMinute * 6;
+        let hourAngle = (targetHour % 12) * 30 + (targetMinute * 0.5);
+
+        // 讓網頁上的指針轉動
+        document.getElementById('minuteHand').style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
+        document.getElementById('hourHand').style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
+
+        // 產生標準正確答案
+        let correctText = formatTime(targetHour, targetMinute);
+
+        // 產生干擾答案
+        let wrongText1 = "";
+        let wrongText2 = "";
+
+        if (currentLevel === 'easy') {
+            wrongText1 = formatTime(targetHour === 12 ? 1 : targetHour + 1, targetMinute);
+            wrongText2 = formatTime(targetHour, targetMinute === 0 ? 30 : 0);
+        } else {
+            let wm1 = (targetMinute + 15) % 60;
+            let wm2 = targetMinute - 10 < 0 ? targetMinute + 20 : targetMinute - 10;
+            wrongText1 = formatTime(targetHour, wm1);
+            wrongText2 = formatTime(targetHour === 1 ? 12 : targetHour - 1, wm2);
         }
 
-        function generateQuestion() {
-            canClick = true;
-            document.getElementById('feedbackText').textContent = "";
-            document.getElementById('progress').textContent = `第 ${currentQuestion} / ${totalQuestions} 題`;
+        // 確保三個選項不重複
+        if(wrongText1 === correctText) wrongText1 = formatTime(targetHour + 2, targetMinute);
+        if(wrongText2 === correctText || wrongText2 === wrongText1) wrongText2 = formatTime(targetHour, (targetMinute + 35) % 60);
 
-            // 隨機產生目標小時 (1 ~ 12)
-            targetHour = Math.floor(Math.random() * 12) + 1;
+        // 打亂選項順序
+        let options = [
+            { text: correctText, isCorrect: true },
+            { text: wrongText1, isCorrect: false },
+            { text: wrongText2, isCorrect: false }
+        ];
+        options.sort(() => Math.random() - 0.5);
+
+        // 渲染按鈕
+        const optionsContainer = document.getElementById('options');
+        optionsContainer.innerHTML = '';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.classList.add('option-btn');
+            btn.textContent = opt.text;
+            btn.onclick = () => checkAnswer(opt.isCorrect, btn);
+            optionsContainer.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(isCorrect, buttonElement) {
+        if (!canClick) return;
+        canClick = false;
+
+        const feedback = document.getElementById('feedbackText');
+        if (isCorrect) {
+            feedback.style.color = "#228B22";
+            feedback.textContent = "⭕ 答對了！時間看得真準！";
+            buttonElement.style.backgroundColor = "#C8E6C9";
             
-            // 根據難易度產生目標分鐘
-            if (currentLevel === 'easy') {
-                // 簡單：0分 或 30分
-                targetMinute = Math.random() < 0.5 ? 0 : 30;
-            } else if (currentLevel === 'normal') {
-                // 普通：5分鐘為一單位 (0, 5, 10 ... 55)
-                targetMinute = Math.floor(Math.random() * 12) * 5;
-            } else {
-                // 困難：隨機 0 ~ 59 分
-                targetMinute = Math.floor(Math.random() * 60);
+            // 📳 觸覺震動
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
             }
-
-            // 🔮 計算指針旋轉角度
-            // 分針：每分鐘旋轉 6 度
-            let minuteAngle = targetMinute * 6;
-            // 時針：每小時旋轉 30 度，加上分針帶動的微幅位移 (每分鐘 0.5 度)
-            let hourAngle = (targetHour % 12) * 30 + (targetMinute * 0.5);
-
-            // 讓網頁上的指針轉動
-            document.getElementById('minuteHand').style.transform = `translateX(-50%) rotate(${minuteAngle}deg)`;
-            document.getElementById('hourHand').style.transform = `translateX(-50%) rotate(${hourAngle}deg)`;
-
-            // 產生標準正確答案
-            let correctText = formatTime(targetHour, targetMinute);
-
-            // 產生干擾答案
-            let wrongText1 = "";
-            let wrongText2 = "";
-
-            if (currentLevel === 'easy') {
-                // 簡單模式：錯在小時，或剛好差半小時
-                wrongText1 = formatTime(targetHour === 12 ? 1 : targetHour + 1, targetMinute);
-                wrongText2 = formatTime(targetHour, targetMinute === 0 ? 30 : 0);
-            } else {
-                // 普通與困難：干擾分針加減 10 或 15 分鐘
-                let wm1 = (targetMinute + 15) % 60;
-                let wm2 = targetMinute - 10 < 0 ? targetMinute + 20 : targetMinute - 10;
-                wrongText1 = formatTime(targetHour, wm1);
-                wrongText2 = formatTime(targetHour === 1 ? 12 : targetHour - 1, wm2);
-            }
-
-            // 確保三個選項不重複
-            if(wrongText1 === correctText) wrongText1 = formatTime(targetHour + 2, targetMinute);
-            if(wrongText2 === correctText || wrongText2 === wrongText1) wrongText2 = formatTime(targetHour, (targetMinute + 35) % 60);
-
-            // 打亂選項順序
-            let options = [
-                { text: correctText, isCorrect: true },
-                { text: wrongText1, isCorrect: false },
-                { text: wrongText2, isCorrect: false }
-            ];
-            options.sort(() => Math.random() - 0.5);
-
-            // 渲染按鈕
-            const optionsContainer = document.getElementById('options');
-            optionsContainer.innerHTML = '';
-
-            options.forEach(opt => {
-                const btn = document.createElement('button');
-                btn.classList.add('option-btn');
-                btn.textContent = opt.text;
-                btn.onclick = () => checkAnswer(opt.isCorrect, btn);
-                optionsContainer.appendChild(btn);
-            });
-        }
-
-        function checkAnswer(isCorrect, buttonElement) {
-            if (!canClick) return;
-            canClick = false;
-
-            const feedback = document.getElementById('feedbackText');
-            if (isCorrect) {
-                feedback.style.color = "#228B22";
-                feedback.textContent = "⭕ 答對了！時間看得真準！";
-                buttonElement.style.backgroundColor = "#C8E6C9";
-                
-                // 📳 觸覺優化：答對時，連續雙重震動
-                if (navigator.vibrate) {
-                    navigator.vibrate([100, 50, 100]);
-                }
-                
-                // 🎵 播放純媒體音效
+            
+            // 🎵 播放純媒體音效
+            try {
                 AudioEffects.playCorrect();
-
-                setTimeout(() => {
-                    if (currentQuestion < totalQuestions) {
-                        currentQuestion++;
-                        generateQuestion();
-                    } else {
-                        document.getElementById('winOverlay').style.display = 'flex';
-                    }
-                }, 1500);
-            } else {
-                feedback.style.color = "#D32F2F";
-                feedback.textContent = "❌ 看錯囉，再仔細瞄一下指針！";
-                buttonElement.style.backgroundColor = "#FFCDD2";
-                
-                setTimeout(() => {
-                    buttonElement.style.backgroundColor = "#FFF";
-                    feedback.textContent = "";
-                    canClick = true;
-                }, 1200);
+            } catch(e) {
+                console.log("音效初始化暫時略過");
             }
-        }
 
-        function resetGame() {
-            document.getElementById('winOverlay').style.display = 'none';
-            currentQuestion = 1;
-            generateQuestion();
+            // 🕒 延時 1.5 秒自動切換下一題
+            setTimeout(() => {
+                if (currentQuestion < totalQuestions) {
+                    currentQuestion++;
+                    generateQuestion();
+                } else {
+                    document.getElementById('winOverlay').style.display = 'flex';
+                }
+            }, 1500);
+        } else {
+            feedback.style.color = "#D32F2F";
+            feedback.textContent = "❌ 看錯囉，再仔細瞄一下指針！";
+            buttonElement.style.backgroundColor = "#FFCDD2";
+            
+            setTimeout(() => {
+                buttonElement.style.backgroundColor = "#FFF";
+                feedback.textContent = "";
+                canClick = true;
+            }, 1200);
         }
+    }
 
-        // 啟動關卡
+    function resetGame() {
+        document.getElementById('winOverlay').style.display = 'none';
+        currentQuestion = 1;
         generateQuestion();
+    }
 
-        // ==========================================
-        // 🕒 遊戲中同步累積時間功能
-        // ==========================================
-        setInterval(() => {
-            let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
-            currentSeconds++;
-            localStorage.setItem('game_total_seconds', currentSeconds.toString());
-        }, 1000);
+    // 啟動關卡
+    generateQuestion();
+
+    // ==========================================
+    // 🕒 遊戲中同步累積時間功能
+    // ==========================================
+    setInterval(() => {
+        let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+        currentSeconds++;
+        localStorage.setItem('game_total_seconds', currentSeconds.toString());
+    }, 1000);
     </script>
 </body>
 </html>
