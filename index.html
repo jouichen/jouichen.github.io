@@ -126,13 +126,14 @@
             transform: scale(0.95);
         }
         
-        /* 🎨 精心調配：最適合長輩眼球的高對比按鈕色彩組合 */
+       /* 🎨 精心調配：最適合長輩眼球的高對比按鈕色彩組合 */
         .btn-game1 { background-color: #0066CC; } /* 海軍深藍 - 穩重、字體最鮮明 */
         .btn-game2 { background-color: #C2185B; } /* 胭脂深紅 - 喜慶且辨識度極高 */
         .btn-game3 { background-color: #E65100; } /* 暖陽深橘 - 醒目、極具活力 */
         .btn-game4 { background-color: #00796B; } /* 翡翠深綠 - 護眼、舒適不刺眼 */
         .btn-game5 { background-color: #7B1FA2; } /* 貴族深紫 - 優雅、形狀邊界明確 */
         .btn-game6 { background-color: #D32F2F; } /* 經典正紅 - 強烈視覺導引 */
+        .btn-game7 { background-color: #E11D48; } /* 💡 新增：玫瑰深粉 - 溫暖活潑、邊界鮮明 */
         
         /* 重置按鈕 */
         .reset-btn {
@@ -176,7 +177,9 @@
         
         <a href="#" onclick="enterGame('game_language.html')" class="lobby-btn btn-game6">🗣️ 遊戲六：生活台日語大考驗<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(25題海量生活情境，挑戰大腦記憶與人情味)</span>
 
-    <button class="reset-btn" onclick="clearTodayProgress()">重新開始新的一天</button>
+       <a href="game_puzzle.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game7">🖼️ 遊戲七：大腦記憶拼圖大賽<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(鍛鍊空間視覺與圖形辨識力)</span></a>
+   
+     <button class="reset-btn" onclick="clearTodayProgress()">重新開始新的一天</button>
 
     <script>
         const todayStr = new Date().toLocaleDateString();
