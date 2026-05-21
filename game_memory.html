@@ -38,7 +38,17 @@
     </div>
     <div class="score-board" id="scoreBoard">翻牌次數：0 次 | 已成功：0 / 6</div>
     <div class="game-container" id="gameContainer"></div>
-    <div class="win-overlay" id="winOverlay"><div class="win-box"><h2 style="font-size:30px;color:#228B22;margin:0;">👍 太棒了！</h2><p style="font-size:20px;">您成功完成了記憶運動！</p><button class="btn" onclick="resetGame()">再玩一次</button></div></div>
+   <div class="win-overlay" id="winOverlay">
+    <div class="win-box">
+        <h2 style="font-size: 30px; color: #9C27B0;">🌸 太棒了！🌸</h2>
+        <p style="font-size: 22px; color: #333; margin-bottom: 25px;">成功翻開所有卡片！大腦記憶力大成功！</p>
+
+        <div style="display: flex; gap: 15px; justify-content: center; width: 100%;">
+            <button class="btn" style="background-color: #4CAF50; flex: 1; font-size: 22px; font-weight: bold; padding: 15px 0; border: none; border-radius: 12px; color: white;" onclick="resetGame()">🟢 再玩一次</button>
+            <a href="index.html" class="btn" style="background-color: #F44336; flex: 1; font-size: 22px; font-weight: bold; padding: 15px 0; border: none; border-radius: 12px; color: white; text-decoration: none; display: inline-block; line-height: 26px; text-align: center;">🔴 回大廳</a>
+        </div>
+    </div>
+</div>
     <script>
         const ALL_ITEMS = ["🍎", "🍉", "🍌", "☎️", "🫖", "🍚", "🚂", "🚗", "🌻", "⛰️"];
         const DIFF_CONFIG = { easy: { pairs: 3, cols: 2 }, normal: { pairs: 6, cols: 3 }, hard: { pairs: 10, cols: 4 } };
