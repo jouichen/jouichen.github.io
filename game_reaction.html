@@ -49,16 +49,17 @@
             100% { transform: translate(2px, 2px) rotate(5deg); }
         }
 
-        /* 拍打下去的紅色特效 */
+        /* 拍打下去的紅色爆炸特效 */
         .hit-effect {
             font-size: 60px;
             position: absolute;
             display: none;
         }
 
+        /* 結算彈出視窗 */
         .win-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 10; }
         .win-box { background-color: white; padding: 25px; border-radius: 20px; text-align: center; max-width: 80%; }
-        .btn { font-size: 22px; padding: 12px 35px; background-color: #FF5722; color: white; border: none; border-radius: 10px; font-weight: bold; margin-top: 15px; }
+        .btn { font-size: 22px; font-weight: bold; padding: 15px 0; color: white; border: none; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px rgba(0,0,0,0.2); box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -71,7 +72,6 @@
 
     <div class="score-board" id="scoreBoard">目前進度：已消滅 0 / 10 隻蚊子</div>
 
-    <!-- 3x3 遊戲格子 -->
     <div class="grid-container">
         <div class="hole" onclick="hit(0)"><div class="mosquito" id="m0">🦟</div><div class="hit-effect" id="h0">💥</div></div>
         <div class="hole" onclick="hit(1)"><div class="mosquito" id="m1">🦟</div><div class="hit-effect" id="h1">💥</div></div>
@@ -86,105 +86,96 @@
 
     <div class="win-overlay" id="winOverlay">
         <div class="win-box">
-            <h2>得分：<span id="finalScore">0</span> 分！</h2>
-            <p style="font-size: 20px; color: #333; margin-bottom: 25px;">成功消滅蚊子！大腦反應力一級棒！</p>
+            <h2 style="font-size: 30px; color: #9C27B0; margin: 0 0 10px 0;">🌸 滅蚊大師！🌸</h2>
+            <p style="font-size: 22px; color: #333; margin-bottom: 25px;">成功消滅蚊子！<br>大腦反應力一級棒！</p>
             
             <div style="display: flex; gap: 15px; justify-content: center; width: 100%;">
-                <button class="btn" style="background-color: #4CAF50; flex: 1; font-size: 22px; font-weight: bold; padding: 15px 0; border: none; border-radius: 12px; color: white; cursor: pointer;" onclick="resetGame()">🟢 再玩一次</button>
-                <a href="index.html" class="btn" style="background-color: #F44336; flex: 1; font-size: 22px; font-weight: bold; padding: 15px 0; border: none; border-radius: 12px; color: white; text-decoration: none; display: inline-block; line-height: 26px; text-align: center;">🔴 回大廳</a>
+                <button class="btn" style="background-color: #4CAF50; flex: 1;" onclick="resetGame()">🟢 再玩一次</button>
+                <a href="index.html" class="btn" style="background-color: #F44336; flex: 1; text-decoration: none; display: inline-block; line-height: 26px; text-align: center;">🔴 回大廳</a>
             </div>
-        </div>
-    </div>
         </div>
     </div>
 
     <script>
-        // 🎵 網頁立體音效產生器
-const AudioEffects = {
-    ctx: null,
+        // 🎵 網頁免檔案：立體音效產生器
+        const AudioEffects = {
+            ctx: null,
 
-    init() {
-        if (!this.ctx) {
-            this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-    },
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
 
-    // 🦟 模擬蚊子嗡嗡聲 (持續的高頻震盪音)
-    playMosquito() {
-        this.init();
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+            // 🦟 模擬蚊子嗡嗡聲 (持續的高頻震盪音)
+            playMosquito() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
 
-        let osc = this.ctx.createOscillator();
-        let gain = this.ctx.createGain();
-        
-        // 蚊子翅膀拍動的高頻率 (大約 450Hz - 600Hz 之間微幅晃動)
-        osc.type = 'sawtooth'; 
-        osc.frequency.setValueAtTime(500, this.ctx.currentTime);
-        // 加上一點起伏模擬蚊子飛來飛去
-        osc.frequency.linearRampToValueAtTime(550, this.ctx.currentTime + 0.5);
-        osc.frequency.linearRampToValueAtTime(480, this.ctx.currentTime + 1.0);
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
+                
+                osc.type = 'sawtooth'; 
+                osc.frequency.setValueAtTime(500, this.ctx.currentTime);
+                osc.frequency.linearRampToValueAtTime(550, this.ctx.currentTime + 0.5);
+                osc.frequency.linearRampToValueAtTime(480, this.ctx.currentTime + 1.0);
 
-        // 聲音調小聲一點，不然會太吵
-        gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.0); // 1秒後消失
+                gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.0); 
 
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        
-        osc.start();
-        osc.stop(this.ctx.currentTime + 1.0);
-    },
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + 1.0);
+            },
 
-    // 💥 模擬拍打、拍蚊子的聲音 (短促的低頻衝擊爆音)
-    playSlap() {
-        this.init();
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+            // 💥 模擬拍打、拍蚊子的聲音 (短促的低頻衝擊爆音)
+            playSlap() {
+                this.init();
+                if (this.ctx.state === 'suspended') this.ctx.resume();
 
-        let osc = this.ctx.createOscillator();
-        let gain = this.ctx.createGain();
+                let osc = this.ctx.createOscillator();
+                let gain = this.ctx.createGain();
 
-        osc.type = 'triangle';
-        // 從高頻瞬間掉到低頻，模擬重擊拍打聲
-        osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
 
-        // 音量瞬間爆發然後快速歸零
-        gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
 
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
 
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.15);
-    }
-};
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.15);
+            }
+        };
+
         let score = 0;
         const targetScore = 10;
         let currentHole = -1;
         let canHit = true;
 
-        // 使用網頁內建語音發出「啪」的音效，不需要載入外部音檔
         function playHitSound() {
             if ('speechSynthesis' in window) {
                 const utterance = new SpeechSynthesisUtterance('啪');
-                utterance.rate = 2.0; // 讓速度變快
+                utterance.rate = 2.0; 
                 utterance.pitch = 1.5;
                 window.speechSynthesis.speak(utterance);
             }
         }
 
         function showMosquito() {
-            // 讓手機發出蚊子飛的嗡嗡聲
-AudioEffects.playMosquito();
+            AudioEffects.playMosquito();
             canHit = true;
-            // 隱藏所有格子裡的蚊子與特效
+            
             for (let i = 0; i < 9; i++) {
                 document.getElementById(`m${i}`).style.display = 'none';
                 document.getElementById(`h${i}`).style.display = 'none';
             }
 
-            // 隨機選一個不一樣的格子冒出蚊子
             let nextHole;
             do {
                 nextHole = Math.floor(Math.random() * 9);
@@ -200,12 +191,18 @@ AudioEffects.playMosquito();
 
             // 成功擊中！
             score++;
-            // 讓手機發出清脆的打中音效
-AudioEffects.playSlap();
-            document.getElementById(`m${holeIndex}`).style.display = 'none';
-            document.getElementById(`h${holeIndex}`).style.display = 'block'; // 秀出爆炸圖案
             
-            playHitSound(); // 播放啪一聲
+            // 📳 觸覺優化：啪！拍到蚊子的瞬間，手機狠狠紮實震動 80 毫秒！
+            if (navigator.vibrate) {
+                navigator.vibrate(80);
+            }
+
+            // 讓手機發出清脆的打中音效
+            AudioEffects.playSlap();
+            document.getElementById(`m${holeIndex}`).style.display = 'none';
+            document.getElementById(`h${holeIndex}`).style.display = 'block'; 
+            
+            playHitSound(); 
             document.getElementById('scoreBoard').textContent = `目前進度：已消滅 ${score} / ${targetScore} 隻蚊子`;
 
             setTimeout(() => {
@@ -214,7 +211,7 @@ AudioEffects.playSlap();
                 } else {
                     document.getElementById('winOverlay').style.display = 'flex';
                 }
-            }, 600); // 爆炸圖案停留 0.6 秒後換下一隻
+            }, 600); 
         }
 
         function resetGame() {
