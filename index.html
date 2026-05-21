@@ -181,3 +181,79 @@
 
     <script>
         const todayStr = new Date().toLocaleDateString();
+        
+        if (localStorage.getItem('game_date') !== todayStr) {
+            localStorage.setItem('game_date', todayStr);
+            localStorage.setItem('game_total_seconds', '0');
+        }
+
+        let totalSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+        let lobbyTimer;
+
+        function updateUI() {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            document.getElementById('totalTimeDisplay').textContent = `今日已玩：${minutes} 分 ${seconds} 秒`;
+
+            const stamp10 = document.getElementById('stamp-10');
+            const stamp20 = document.getElementById('stamp-20');
+            const hint = document.getElementById('targetHint');
+
+            if (totalSeconds >= 600) {
+                stamp10.classList.add('stamped');
+                stamp10.textContent = "🌸"; 
+                stamp10.style.fontSize = "42px";
+            } else {
+                stamp10.classList.remove('stamped');
+                stamp10.textContent = "10分鐘";
+                stamp10.style.fontSize = "16px";
+            }
+
+            if (totalSeconds >= 1200) {
+                stamp20.classList.add('stamped');
+                stamp20.textContent = "💮"; 
+                stamp20.style.fontSize = "46px"; 
+                hint.innerHTML = "<span style='color:#D32F2F; font-size:22px; font-weight:bold;'>🎉 恭喜！今日大腦運動大成功！</span>";
+            } else {
+                stamp20.classList.remove('stamped');
+                stamp20.textContent = "20分鐘";
+                stamp20.style.fontSize = "16px";
+                const remainingMin = Math.ceil((1200 - totalSeconds) / 60);
+                hint.textContent = `再激勵大腦 ${remainingMin} 分鐘就能成功達標！`;
+            }
+        }
+
+        function startLobbyTimer() {
+            lobbyTimer = setInterval(() => {
+                totalSeconds++;
+                localStorage.setItem('game_total_seconds', totalSeconds.toString());
+                updateUI();
+            }, 1000);
+        }
+
+        function enterGame(pageUrl) {
+            clearInterval(lobbyTimer);
+            window.location.href = pageUrl;
+        }
+
+        function clearTodayProgress() {
+            if (confirm("確定要清除今天的點數與時間，重新計算嗎？")) {
+                totalSeconds = 0;
+                localStorage.setItem('game_total_seconds', '0');
+                updateUI();
+            }
+        }
+
+        updateUI();
+        startLobbyTimer();
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(reg => console.log('離線功能準備就緒！', reg))
+                    .catch(err => console.log('離線功能啟動失敗', err));
+            });
+        }
+    </script>
+</body>
+</html>
