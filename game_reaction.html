@@ -97,142 +97,135 @@
     </div>
 
     <script>
-        // 🎵 網頁免檔案：立體音效產生器
-        const AudioEffects = {
-            ctx: null,
+    // 🎵 網頁免檔案：立體音效產生器（此音效屬於標準媒體通道，會乖乖服從靜音模式）
+    const AudioEffects = {
+        ctx: null,
 
-            init() {
-                if (!this.ctx) {
-                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-                }
-            },
-
-            // 🦟 模擬蚊子嗡嗡聲 (持續的高頻震盪音)
-            playMosquito() {
-                this.init();
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-
-                let osc = this.ctx.createOscillator();
-                let gain = this.ctx.createGain();
-                
-                osc.type = 'sawtooth'; 
-                osc.frequency.setValueAtTime(500, this.ctx.currentTime);
-                osc.frequency.linearRampToValueAtTime(550, this.ctx.currentTime + 0.5);
-                osc.frequency.linearRampToValueAtTime(480, this.ctx.currentTime + 1.0);
-
-                gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
-                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.0); 
-
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-                
-                osc.start();
-                osc.stop(this.ctx.currentTime + 1.0);
-            },
-
-            // 💥 模擬拍打、拍蚊子的聲音 (短促的低頻衝擊爆音)
-            playSlap() {
-                this.init();
-                if (this.ctx.state === 'suspended') this.ctx.resume();
-
-                let osc = this.ctx.createOscillator();
-                let gain = this.ctx.createGain();
-
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(180, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
-
-                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
-
-                osc.connect(gain);
-                gain.connect(this.ctx.destination);
-
-                osc.start();
-                osc.stop(this.ctx.currentTime + 0.15);
+        init() {
+            if (!this.ctx) {
+                this.ctx = new (window.AudioContext || window.webkitAudioContext)();
             }
-        };
+        },
 
-        let score = 0;
-        const targetScore = 10;
-        let currentHole = -1;
-        let canHit = true;
+        // 🦟 模擬蚊子嗡嗡聲
+        playMosquito() {
+            this.init();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
 
-        function playHitSound() {
-            if ('speechSynthesis' in window) {
-                const utterance = new SpeechSynthesisUtterance('啪');
-                utterance.rate = 2.0; 
-                utterance.pitch = 1.5;
-                window.speechSynthesis.speak(utterance);
-            }
+            let osc = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+            
+            osc.type = 'sawtooth'; 
+            osc.frequency.setValueAtTime(500, this.ctx.currentTime);
+            osc.frequency.linearRampToValueAtTime(550, this.ctx.currentTime + 0.5);
+            osc.frequency.linearRampToValueAtTime(480, this.ctx.currentTime + 1.0);
+
+            gain.gain.setValueAtTime(0.04, this.ctx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 1.0); 
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            
+            osc.start();
+            osc.stop(this.ctx.currentTime + 1.0);
+        },
+
+        // 💥 模擬拍打、拍蚊子的聲音
+        playSlap() {
+            this.init();
+            if (this.ctx.state === 'suspended') this.ctx.resume();
+
+            let osc = this.ctx.createOscillator();
+            let gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.15);
+
+            gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.15);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start();
+            osc.stop(this.ctx.currentTime + 0.15);
+        }
+    };
+
+    let score = 0;
+    const targetScore = 10;
+    let currentHole = -1;
+    let canHit = true;
+
+    // 💡 舊的 playHitSound() 語音朗讀函式已經在這裡被徹底移除 💡
+
+    function showMosquito() {
+        AudioEffects.playMosquito();
+        canHit = true;
+        
+        for (let i = 0; i < 9; i++) {
+            document.getElementById(`m${i}`).style.display = 'none';
+            document.getElementById(`h${i}`).style.display = 'none';
         }
 
-        function showMosquito() {
-            AudioEffects.playMosquito();
-            canHit = true;
-            
-            for (let i = 0; i < 9; i++) {
-                document.getElementById(`m${i}`).style.display = 'none';
-                document.getElementById(`h${i}`).style.display = 'none';
+        let nextHole;
+        do {
+            nextHole = Math.floor(Math.random() * 9);
+        } while (nextHole === currentHole);
+        
+        currentHole = nextHole;
+        document.getElementById(`m${currentHole}`).style.display = 'block';
+    }
+
+    function hit(holeIndex) {
+        if (!canHit || holeIndex !== currentHole) return;
+        canHit = false;
+
+        // 成功擊中！
+        score++;
+        
+        // 📳 觸覺震動 80 毫秒
+        if (navigator.vibrate) {
+            navigator.vibrate(80);
+        }
+
+        // 🎵 播放純媒體擊打音效（手機靜音時，這個音效會跟著一起靜音）
+        AudioEffects.playSlap();
+        
+        document.getElementById(`m${holeIndex}`).style.display = 'none';
+        document.getElementById(`h${holeIndex}`).style.display = 'block'; 
+        
+        // 💡 原本這裡的 playHitSound(); 已經刪除了，不再觸發會破壞靜音的語音
+        
+        document.getElementById('scoreBoard').textContent = `目前進度：已消滅 ${score} / ${targetScore} 隻蚊子`;
+
+        setTimeout(() => {
+            if (score < targetScore) {
+                showMosquito();
+            } else {
+                document.getElementById('winOverlay').style.display = 'flex';
             }
+        }, 600); 
+    }
 
-            let nextHole;
-            do {
-                nextHole = Math.floor(Math.random() * 9);
-            } while (nextHole === currentHole);
-            
-            currentHole = nextHole;
-            document.getElementById(`m${currentHole}`).style.display = 'block';
-        }
-
-        function hit(holeIndex) {
-            if (!canHit || holeIndex !== currentHole) return;
-            canHit = false;
-
-            // 成功擊中！
-            score++;
-            
-            // 📳 觸覺優化：啪！拍到蚊子的瞬間，手機狠狠紮實震動 80 毫秒！
-            if (navigator.vibrate) {
-                navigator.vibrate(80);
-            }
-
-            // 讓手機發出清脆的打中音效
-            AudioEffects.playSlap();
-            document.getElementById(`m${holeIndex}`).style.display = 'none';
-            document.getElementById(`h${holeIndex}`).style.display = 'block'; 
-            
-            playHitSound(); 
-            document.getElementById('scoreBoard').textContent = `目前進度：已消滅 ${score} / ${targetScore} 隻蚊子`;
-
-            setTimeout(() => {
-                if (score < targetScore) {
-                    showMosquito();
-                } else {
-                    document.getElementById('winOverlay').style.display = 'flex';
-                }
-            }, 600); 
-        }
-
-        function resetGame() {
-            document.getElementById('winOverlay').style.display = 'none';
-            score = 0;
-            currentHole = -1;
-            document.getElementById('scoreBoard').textContent = `目前進度：已消滅 0 / ${targetScore} 隻蚊子`;
-            showMosquito();
-        }
-
-        // 啟動第一隻蚊子
+    function resetGame() {
+        document.getElementById('winOverlay').style.display = 'none';
+        score = 0;
+        currentHole = -1;
+        document.getElementById('scoreBoard').textContent = `目前進度：已消滅 0 / ${targetScore} 隻蚊子`;
         showMosquito();
+    }
 
-        // ==========================================
-        // 🕒 遊戲中同步累積時間功能
-        // ==========================================
-        setInterval(() => {
-            let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
-            currentSeconds++;
-            localStorage.setItem('game_total_seconds', currentSeconds.toString());
-        }, 1000);
-    </script>
-</body>
-</html>
+    // 啟動第一隻蚊子
+    showMosquito();
+
+    // ==========================================
+    // 🕒 遊戲中同步累積時間功能
+    // ==========================================
+    setInterval(() => {
+        let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
+        currentSeconds++;
+        localStorage.setItem('game_total_seconds', currentSeconds.toString());
+    }, 1000);
+</script>
