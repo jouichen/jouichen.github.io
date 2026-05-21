@@ -77,11 +77,24 @@
             cardsData[id].isFlipped = true; element.classList.add('flipped'); element.textContent = cardsData[id].value; selectedCards.push({ id, element });
             if (selectedCards.length === 2) { clicks++; updateScore(); checkMatch(); }
         }
-        function checkMatch() {
-            const [card1, card2] = selectedCards; const config = DIFF_CONFIG[currentDifficulty];
+function checkMatch() {
+            const [card1, card2] = selectedCards; 
+            const config = DIFF_CONFIG[currentDifficulty];
+            
+            // 當兩張牌的圖案/數字一模一樣時（配對成功）
             if (cardsData[card1.id].value === cardsData[card2.id].value) {
-                cardsData[card1.id].isMatched = true; cardsData[card2.id].isMatched = true; card1.element.classList.add('matched'); card2.element.classList.add('matched'); selectedCards = []; matches++; updateScore();
-                if (matches === config.pairs) { setTimeout(() => { winOverlay.style.display = 'flex'; }, 500); }
+                cardsData[card1.id].isMatched = true; 
+                cardsData[card2.id].isMatched = true; 
+                card1.element.classList.add('matched'); 
+                card2.element.classList.add('matched'); 
+                selectedCards = []; 
+                matches++; 
+                updateScore();
+                playCorrectSound(); 
+                
+                if (matches === config.pairs) { 
+                    setTimeout(() => { winOverlay.style.display = 'flex'; }, 500); 
+                }
             } else {
                 isWaiting = true;
                 setTimeout(() => {
@@ -100,6 +113,38 @@ setInterval(() => {
     currentSeconds++;
     localStorage.setItem('game_total_seconds', currentSeconds.toString());
 }, 1000);
+
+        // 🔔 答對時的清脆叮咚音效
+function playCorrectSound() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    // 第一聲：「叮」（音高 523Hz，持續 0.1 秒）
+    let osc1 = ctx.createOscillator();
+    let gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5 音符
+    gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start();
+    osc1.stop(ctx.currentTime + 0.1);
+
+    // 第二聲：「咚」（音高 659Hz，稍微延遲 0.08 秒後發聲，持續 0.25 秒）
+    setTimeout(() => {
+        let osc2 = ctx.createOscillator();
+        let gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, ctx.currentTime); // E5 音符
+        gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start();
+        osc2.stop(ctx.currentTime + 0.25);
+    }, 80);
+}
     </script>
 </body>
 </html>
