@@ -101,39 +101,59 @@
         /* -------------------------------------
            🎮 友善銀髮族遊戲選單區 (高對比、暖色系)
         ------------------------------------- */
+       /* 🎮 頂層容器：改為流暢的雙欄網格 */
         .menu-container {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr); /* 自動分成左右兩欄 */
+            gap: 12px;                             /* 按鈕之間的和諧間距 */
             width: 100%;
-            max-width: 400px;
-        }
-        .lobby-btn {
-            font-size: 24px;
-            font-weight: bold;
-            padding: 22px 15px;
-            border: 4px solid #222;
-            border-radius: 22px;
-            cursor: pointer;
-            color: white;
-            text-decoration: none;
-            text-align: center;
-            box-shadow: 0 6px 10px rgba(0,0,0,0.2);
-            text-shadow: 1px 2px 3px rgba(0,0,0,0.4); /* 增強文字在按鈕上的清晰度 */
-            transition: transform 0.1s;
-        }
-        .lobby-btn:active {
-            transform: scale(0.95);
+            max-width: 450px;
+            padding: 5px;
+            box-sizing: border-box;
         }
         
-       /* 🎨 精心調配：最適合長輩眼球的高對比按鈕色彩組合 */
-        .btn-game1 { background-color: #0066CC; } /* 海軍深藍 - 穩重、字體最鮮明 */
-        .btn-game2 { background-color: #C2185B; } /* 胭脂深紅 - 喜慶且辨識度極高 */
-        .btn-game3 { background-color: #E65100; } /* 暖陽深橘 - 醒目、極具活力 */
-        .btn-game4 { background-color: #00796B; } /* 翡翠深綠 - 護眼、舒適不刺眼 */
-        .btn-game5 { background-color: #7B1FA2; } /* 貴族深紫 - 優雅、形狀邊界明確 */
-        .btn-game6 { background-color: #D32F2F; } /* 經典正紅 - 強烈視覺導引 */
-        .btn-game7 { background-color: #E11D48; } /* 💡 新增：玫瑰深粉 - 溫暖活潑、邊界鮮明 */
+        /* 🎯 全新升級：雙欄直覺卡片按鈕 */
+        .lobby-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 18px 10px;
+            color: white;
+            font-size: 20px;          /* 主標題字體依舊大又清晰 */
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 16px;      /* 圓潤邊角更具親和力 */
+            box-shadow: 0 6px rgba(0,0,0,0.15);
+            transition: transform 0.1s;
+            min-height: 110px;        /* 確保手指非常好按 */
+            box-sizing: border-box;
+        }
+        
+        .lobby-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px rgba(0,0,0,0.15);
+        }
+
+        /* 💡 備註小字：收納在按鈕下方，不干擾視線 */
+        .btn-hint {
+            font-size: 13px;
+            font-weight: normal;
+            opacity: 0.9;
+            margin-top: 6px;
+            line-height: 1.2;
+        }
+
+        /* 🎨 按鈕色彩專屬區（維持高對比） */
+        .btn-game1 { background-color: #0066CC; } 
+        .btn-game2 { background-color: #C2185B; } 
+        .btn-game3 { background-color: #E65100; } 
+        .btn-game4 { background-color: #00796B; } 
+        .btn-game5 { background-color: #7B1FA2; } 
+        .btn-game6 { background-color: #D32F2F; } 
+        .btn-game7 { background-color: #E11D48; } 
+        .btn-game8 { background-color: #115E59; border: 2px solid #F59E0B; }
         
         /* 重置按鈕 */
         .reset-btn {
@@ -164,22 +184,49 @@
         <div class="target-hint" id="targetHint">再玩 20 分鐘就能成功蓋章喔！</div>
     </div>
 
-    <div class="menu-container">
-        <a href="#" onclick="enterGame('game_memory.html')" class="lobby-btn btn-game1">🧩 遊戲一：圖標對對碰<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(訓練長期與短期記憶)</span></a>
+   <div class="menu-container">
+        <a href="game_memory.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game1">
+            <span>🧩 圖標對對碰</span>
+            <span class="btn-hint">訓練短期記憶</span>
+        </a>
         
-        <a href="#" onclick="enterGame('game_math.html')" class="lobby-btn btn-game2">🛒 遊戲二：買菜算錢大考驗<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(訓練邏輯與生活計算力)</span></a>
+        <a href="game_math.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game2">
+            <span>🛒 買菜算錢</span>
+            <span class="btn-hint">生活邏輯計算</span>
+        </a>
         
-        <a href="#" onclick="enterGame('game_clock.html')" class="lobby-btn btn-game3">🕒 遊戲三：看看時鐘幾點鐘<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(鍛鍊時間觀念與空間視覺)</span></a>
+        <a href="game_clock.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game3">
+            <span>🕒 看看幾點鐘</span>
+            <span class="btn-hint">鍛鍊空間時間感</span>
+        </a>
 
-        <a href="#" onclick="enterGame('game_reaction.html')" class="lobby-btn btn-game4">🦟 遊戲四：打蚊子大考驗<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(訓練手眼協調與專注反應)</span></a>
+        <a href="game_reaction.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game4">
+            <span>🦟 打蚊子大考驗</span>
+            <span class="btn-hint">手眼專注反應</span>
+        </a>
         
-        <a href="#" onclick="enterGame('game_finger.html')" class="lobby-btn btn-game5">🖐️ 遊戲五：手指比數手指操<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(手腦口並用，全面刺激神經)</span></a>
+        <a href="game_finger.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game5">
+            <span>🖐️ 手指比數操</span>
+            <span class="btn-hint">手腦口全面刺激</span>
+        </a>
         
-        <a href="#" onclick="enterGame('game_language.html')" class="lobby-btn btn-game6">🗣️ 遊戲六：生活台日語大考驗<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(25題海量生活情境，挑戰大腦記憶與人情味)</span>
+        <a href="game_language.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game6">
+            <span>🗣️ 生活台日語</span>
+            <span class="btn-hint">活化語言俚語區</span>
+        </a>
 
-       <a href="game_puzzle.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game7">🖼️ 遊戲七：大腦記憶拼圖大賽<br><span style="font-size:16px; font-weight:normal; opacity: 0.95;">(鍛鍊空間視覺與圖形辨識力)</span></a>
-   
-     <button class="reset-btn" onclick="clearTodayProgress()">重新開始新的一天</button>
+        <a href="game_puzzle.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game7">
+            <span>🖼️ 記憶大拼圖</span>
+            <span class="btn-hint">圖形空間辨識</span>
+        </a>
+
+        <a href="game_mahjong.html" onclick="clearInterval(lobbyTimer);" class="lobby-btn btn-game8">
+            <span>🀄 雀聖聽牌</span>
+            <span class="btn-hint">自摸神算思維</span>
+        </a>
+    </div>
+    
+            <button class="reset-btn" onclick="clearTodayProgress()">重新開始新的一天</button>
 
     <script>
         const todayStr = new Date().toLocaleDateString();
