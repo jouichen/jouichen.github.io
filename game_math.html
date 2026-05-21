@@ -24,9 +24,10 @@
         .status-board { font-size: 18px; font-weight: bold; color: #555; margin-top: 5px; }
         .feedback { font-size: 24px; font-weight: bold; margin-top: 10px; height: 30px; }
         
+        /* 結算彈出視窗 */
         .win-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 10; }
         .win-box { background-color: white; padding: 25px; border-radius: 20px; text-align: center; max-width: 80%; }
-        .btn { font-size: 22px; padding: 12px 35px; background-color: #FF5722; color: white; border: none; border-radius: 10px; font-weight: bold; margin-top: 15px; }
+        .btn { font-size: 22px; font-weight: bold; padding: 15px 0; color: white; border: none; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px rgba(0,0,0,0.2); box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -37,7 +38,6 @@
         <div style="width:75px;"></div>
     </div>
 
-    <!-- 難易度按鈕 -->
     <div class="difficulty-container">
         <button class="diff-btn" id="btn-easy" onclick="changeDifficulty('easy')">簡單</button>
         <button class="diff-btn active" id="btn-normal" onclick="changeDifficulty('normal')">普通</button>
@@ -54,16 +54,14 @@
     </div>
 
     <div class="win-overlay" id="winOverlay">
-    <div class="win-box">
-        <h2 style="font-size: 30px; color: #4CAF50;">🟢 恭喜過關！</h2>
-        <p style="font-size: 22px; color: #333; margin-bottom: 25px;">算術精準！獲得大紅花印章 💮</p>
+        <div class="win-box">
+            <h2 style="font-size: 30px; color: #4CAF50; margin: 0 0 10px 0;">🟢 恭喜過關！</h2>
+            <p style="font-size: 22px; color: #333; margin-bottom: 25px;">算術精準！獲得大紅花印章 💮</p>
 
-        <div style="display: flex; gap: 15px; justify-content: center; width: 100%;">
-            <button class="btn" style="background-color: #4CAF50; flex: 1; font-size: 22px; font-weight: bold; padding: 15px 0; border: none; border-radius: 12px; color: white;" onclick="resetGame()">🟢 再挑戰一次</button>
-            <a href="index.html" class="btn" style="background-color: #F44336; flex: 1; font-size: 22px; font-weight: bold; padding: 15px 0; border: none; border-radius: 12px; color: white; text-decoration: none; display: inline-block; line-height: 26px; text-align: center;">🔴 回大廳</a>
-        </div>
-    </div>
-</div>
+            <div style="display: flex; gap: 15px; justify-content: center; width: 100%;">
+                <button class="btn" style="background-color: #4CAF50; flex: 1;" onclick="resetGame()">🟢 再挑戰一次</button>
+                <a href="index.html" class="btn" style="background-color: #F44336; flex: 1; text-decoration: none; display: inline-block; line-height: 26px; text-align: center;">🔴 回大廳</a>
+            </div>
         </div>
     </div>
 
@@ -104,25 +102,23 @@
             let questionText = "";
 
             if (currentLevel === 'easy' || currentLevel === 'normal') {
-                // 簡單、普通模式：買單一商品
                 const pool = (currentLevel === 'easy') ? ITEMS_EASY : ITEMS_NORMAL;
                 const prod = pool[Math.floor(Math.random() * pool.length)];
                 const quantity = Math.floor(Math.random() * 3) + 2; // 2 ~ 4 個
                 correctAnswer = prod.price * quantity;
 
-                emojiText = prod.emoji.repeat(quantity > 4 ? 4 : quantity); // 避免太多圖標擠爆
+                emojiText = prod.emoji.repeat(quantity > 4 ? 4 : quantity);
                 questionText = `${prod.name}一組 <b>${prod.price}</b> 元，<br>今天買了 <b>${quantity}</b> 組，請問一共要付多少錢？`;
 
             } else if (currentLevel === 'hard') {
-                // 困難模式：兩種商品混合計算 (複合加乘法)
                 const prod1 = ITEMS_EASY[Math.floor(Math.random() * ITEMS_EASY.length)];
                 let prod2;
                 do {
                     prod2 = ITEMS_EASY[Math.floor(Math.random() * ITEMS_EASY.length)];
                 } while (prod1.name === prod2.name);
 
-                const qty1 = Math.floor(Math.random() * 2) + 1; // 1 ~ 2 個
-                const qty2 = Math.floor(Math.random() * 2) + 1; // 1 ~ 2 個
+                const qty1 = Math.floor(Math.random() * 2) + 1;
+                const qty2 = Math.floor(Math.random() * 2) + 1;
                 correctAnswer = (prod1.price * qty1) + (prod2.price * qty2);
 
                 emojiText = `${prod1.emoji.repeat(qty1)} + ${prod2.emoji.repeat(qty2)}`;
@@ -132,11 +128,9 @@
             document.getElementById('itemEmoji').innerHTML = emojiText;
             document.getElementById('questionText').innerHTML = questionText;
 
-            // 產生干擾選項
             let wrong1 = correctAnswer + 10;
             let wrong2 = correctAnswer - 10 > 0 ? correctAnswer - 10 : correctAnswer + 20;
             
-            // 隨機打亂答案順序
             let options = [correctAnswer, wrong1, wrong2];
             options.sort(() => Math.random() - 0.5);
 
@@ -161,7 +155,10 @@
                 feedback.style.color = "#228B22";
                 feedback.textContent = "⭕ 答對了！心算真快！";
                 buttonElement.style.backgroundColor = "#C8E6C9";
-                playCorrectSound(); // 答對立刻叮咚
+                
+                // 🔔 觸發答對音效（音效內已包含震動）
+                playCorrectSound(); 
+
                 setTimeout(() => {
                     if (currentQuestion < totalQuestions) {
                         currentQuestion++;
@@ -197,38 +194,44 @@
             localStorage.setItem('game_total_seconds', currentSeconds.toString());
         }, 1000);
         
-   // 🔔 答對時的清脆叮咚音效
-function playCorrectSound() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') ctx.resume();
+        // ==========================================
+        // 🔔 答對音效 ＆ 📳 雙重震動回饋產生器
+        // ==========================================
+        function playCorrectSound() {
+            // 📳 答對瞬間引爆連續雙重震動 (100ms -> 停50ms -> 100ms)
+            if (navigator.vibrate) {
+                navigator.vibrate([100, 50, 100]);
+            }
 
-    // 第一聲：「叮」（音高 523Hz，持續 0.1 秒）
-    let osc1 = ctx.createOscillator();
-    let gain1 = ctx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5 音符
-    gain1.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-    osc1.start();
-    osc1.stop(ctx.currentTime + 0.1);
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            if (ctx.state === 'suspended') ctx.resume();
 
-    // 第二聲：「咚」（音高 659Hz，稍微延遲 0.08 秒後發聲，持續 0.25 秒）
-    setTimeout(() => {
-        let osc2 = ctx.createOscillator();
-        let gain2 = ctx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(659.25, ctx.currentTime); // E5 音符
-        gain2.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-        osc2.start();
-        osc2.stop(ctx.currentTime + 0.25);
-    }, 80);
-}
-    
+            // 第一聲：「叮」
+            let osc1 = ctx.createOscillator();
+            let gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(523.25, ctx.currentTime); 
+            gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start();
+            osc1.stop(ctx.currentTime + 0.1);
+
+            // 第二聲：「咚」
+            setTimeout(() => {
+                let osc2 = ctx.createOscillator();
+                let gain2 = ctx.createGain();
+                osc2.type = 'sine';
+                osc2.frequency.setValueAtTime(659.25, ctx.currentTime); 
+                gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                osc2.connect(gain2);
+                gain2.connect(ctx.destination);
+                osc2.start();
+                osc2.stop(ctx.currentTime + 0.25);
+            }, 80);
+        }
     </script>
 </body>
 </html>
