@@ -3,37 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大腦動一動 - 三聲道配對大考驗</title>
+    <title>大腦動一動 - 生活台日語大考驗</title>
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; background-color: #F5F5DC; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; user-select: none; -webkit-user-select: none; }
-        .top-bar { display: flex; justify-content: space-between; width: 100%; max-width: 450px; align-items: center; margin-bottom: 10px; }
-        .back-btn { font-size: 16px; font-weight: bold; padding: 8px 15px; background-color: #777; color: white; border: none; border-radius: 8px; text-decoration: none; }
-        h1 { color: #333; font-size: 24px; margin: 0; }
+        .top-bar { display: flex; justify-content: space-between; width: 100%; max-width: 450px; align-items: center; margin-bottom: 15px; }
+        .back-btn { font-size: 18px; font-weight: bold; padding: 10px 18px; background-color: #777; color: white; border: none; border-radius: 12px; text-decoration: none; box-shadow: 0 4px rgba(0,0,0,0.15); }
+        h1 { color: #333; font-size: 26px; margin: 0; text-shadow: 1px 1px #FFF; }
         
-        /* 語言切換按鈕 */
-        .lang-container { display: flex; gap: 8px; width: 100%; max-width: 450px; margin-bottom: 15px; }
-        .lang-btn { flex: 1; font-size: 18px; font-weight: bold; padding: 12px 0; border: 2px solid #333; border-radius: 8px; cursor: pointer; background-color: #FFF; box-shadow: 0 4px rgba(0,0,0,0.1); }
-        .lang-btn.active { background-color: #2196F3; color: white; transform: translateY(2px); box-shadow: none; }
-
-        .game-card { background-color: white; width: 100%; max-width: 450px; border: 4px solid #4CAF50; border-radius: 20px; padding: 20px; box-sizing: border-box; text-align: center; box-shadow: 0 6px 10px rgba(0,0,0,0.1); }
-        .status-board { font-size: 18px; font-weight: bold; color: #555; margin-bottom: 10px; }
+        .game-card { background-color: white; width: 100%; max-width: 450px; border: 4px solid #D32F2F; border-radius: 20px; padding: 20px; box-sizing: border-box; text-align: center; box-shadow: 0 6px 10px rgba(0,0,0,0.1); }
+        .status-board { font-size: 20px; font-weight: bold; color: #555; margin-bottom: 15px; }
         
         /* 題目顯示區 */
-        .question-box { background-color: #E8F5E9; border: 2px solid #81C784; border-radius: 15px; padding: 15px; margin-bottom: 20px; }
-        .target-emoji { font-size: 80px; margin: 10px 0; }
-        .sound-btn { font-size: 22px; font-weight: bold; padding: 12px 30px; background-color: #FF9800; color: white; border: none; border-radius: 30px; cursor: pointer; box-shadow: 0 4px #e65100; }
-        .sound-btn:active { transform: translateY(2px); box-shadow: none; }
+        .question-box { background-color: #FFF3E0; border: 3px solid #FFB74D; border-radius: 15px; padding: 20px; margin-bottom: 20px; }
+        .question-text { font-size: 26px; font-weight: bold; color: #E65100; line-height: 1.4; text-align: center; }
 
         /* 選項區 */
-        .options-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 15px; }
-        .option-card { font-size: 26px; font-weight: bold; padding: 15px 10px; border: 3px solid #333; border-radius: 12px; background-color: #FFF; cursor: pointer; box-shadow: 0 5px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .options-grid { display: flex; flex-direction: column; gap: 14px; margin-top: 15px; }
+        .option-card { font-size: 24px; font-weight: bold; padding: 18px 12px; border: 3px solid #333; border-radius: 15px; background-color: #FFF; cursor: pointer; box-shadow: 0 5px rgba(0,0,0,0.15); text-align: center; color: #222; }
         .option-card:active { transform: translateY(3px); box-shadow: none; }
 
         .feedback { font-size: 24px; font-weight: bold; margin-top: 15px; height: 35px; }
         
+        /* 破關畫面 */
         .win-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 10; }
-        .win-box { background-color: white; padding: 25px; border-radius: 20px; text-align: center; max-width: 80%; }
-        .btn { font-size: 22px; font-weight: bold; padding: 15px 0; color: white; border: none; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px rgba(0,0,0,0.2); box-sizing: border-box; }
+        .win-box { background-color: white; padding: 30px 20px; border-radius: 20px; text-align: center; max-width: 85%; width: 380px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        .btn { font-size: 22px; font-weight: bold; padding: 15px 0; color: white; border: none; border-radius: 12px; cursor: pointer; text-align: center; box-shadow: 0 4px rgba(0,0,0,0.2); box-sizing: border-box; width: 100%; }
         .btn:active { transform: translateY(2px); box-shadow: none; }
     </style>
 </head>
@@ -41,32 +35,25 @@
 
     <div class="top-bar">
         <a href="index.html" class="back-btn">⬅️ 回大廳</a>
-        <h1>🗣️ 三聲道語言大師</h1>
-        <div style="width:75px;"></div>
-    </div>
-
-    <div class="lang-container">
-        <button class="lang-btn active" id="btn-ch" onclick="changeLanguage('ch')">國語 (中文)</button>
-        <button class="lang-btn" id="btn-en" onclick="changeLanguage('en')">英語 (English)</button>
-        <button class="lang-btn" id="btn-jp" onclick="changeLanguage('jp')">日本語 (日文)</button>
+        <h1>🗣️ 生活台日語大考驗</h1>
+        <div style="width:40px;"></div>
     </div>
 
     <div class="game-card">
-        <div class="status-board" id="progressText">第 1 / 3 題</div>
+        <div class="status-board" id="progressText">第 1 / 5 題</div>
         
         <div class="question-box">
-            <div style="font-size: 18px; font-weight: bold; color: #2E7D32;">聽聽看聲音，這是什麼水果？</div>
-            <div class="target-emoji" id="targetEmoji">🍎</div>
-            <button class="sound-btn" onclick="playSound()">🔊 播放發音</button>
+            <div class="question-text" id="questionText">題目載入中...</div>
         </div>
         
         <div class="options-grid" id="optionsGrid"></div>
         <div class="feedback" id="feedbackText"></div>
     </div>
-   <div class="win-overlay" id="winOverlay">
+
+    <div class="win-overlay" id="winOverlay">
         <div class="win-box">
-            <h2 style="font-size: 32px; color: #FF5722; margin: 0;">🌟 國際語言大師！</h2>
-            <p style="font-size: 22px; color: #333; margin-bottom: 25px;">中、英、日三聲道切換流暢！<br>大腦神經網絡全面活化！</p>
+            <h2 style="font-size: 34px; color: #FF5722; margin: 0 0 10px 0;">🌟 語言智慧王！</h2>
+            <p style="font-size: 22px; color: #333; margin-bottom: 25px; line-height: 1.5;">日常生活俚語對答如流！<br>成功刺激大腦語言區！</p>
             
             <div style="display: flex; gap: 15px; justify-content: center;">
                 <button class="btn" style="background-color: #4CAF50; flex: 1;" onclick="resetGame()">🟢 再玩一次</button>
@@ -76,26 +63,44 @@
     </div>
 
     <script>
-        // 核心多語言水果題庫 (中文/英文/日文)
-        const FRUIT_DATABASE = [
-            { id: "apple", emoji: "🍎", ch: "蘋果", en: "Apple", jp: "林檎 (りんご)", tts_ch: "蘋果", tts_en: "Apple", tts_jp: "りんご" },
-            { id: "banana", emoji: "🍌", ch: "香蕉", en: "Banana", jp: "バナナ", tts_ch: "香蕉", tts_en: "Banana", tts_jp: "バナナ" },
-            { id: "pineapple", emoji: "🍍", ch: "鳳梨", en: "Pineapple", jp: "パイナップル", tts_ch: "鳳梨", tts_en: "Pineapple", tts_jp: "パイナップル" },
-            { id: "watermelon", emoji: "🍉", ch: "西瓜", en: "Watermelon", jp: "スイカ", tts_ch: "西瓜", tts_en: "Watermelon", tts_jp: "すいか" },
-            { id: "orange", emoji: "🍊", ch: "橘子", en: "Orange", jp: "みかん", tts_ch: "橘子", tts_en: "Orange", tts_jp: "みかん" }
+        // 📚 全新擴充：25題三聲道/生活台日語情境題庫
+        const languageQuizBank = [
+            { text: "「早安」的台語最道地的說法是？", options: ["食飽未", "敖早 (Gâu-tsá)", "平安"], correct: 1 },
+            { text: "「謝謝」的台語除了多謝，也可以優雅地說？", options: ["感蝦", "勞力 (Lâu-la̍t)", "歹勢"], correct: 1 },
+            { text: "日語的「謝謝」是哪一個？", options: ["ありがとう (Arigato)", "こんにちは (Konnichiwa)", "すみません (Sumimasen)"], correct: 0 },
+            { text: "遇到鄰居想用台語熱情問候「你吃飽了嗎？」，要說？", options: ["你好無", "來坐啦", "食飽未 (Tsia̍h-bá--bue)"], correct: 2 },
+            { text: "日語說「こんにちは (Konnichiwa)」是指什麼時候的問候語？", options: ["早上", "白天 / 中午", "晚上"], correct: 1 },
+            { text: "去菜市場想買「馬鈴薯」，台灣老一輩通常叫它？", options: ["番薯", "馬鈴薯", "日本番薯 / 洋芋"], correct: 2 },
+            { text: "買菜時熱情的老闆說這把菜「免錢」，意思是？", options: ["很便宜", "不用錢 (免費)", "不能賣"], correct: 1 },
+            { text: "日語的「蘋果」寫作林檎，它的發音是？", options: ["Ringo", "Mikan", "Suika"], correct: 0 },
+            { text: "台語稱呼「鳳梨」的發音是？", options: ["旺來 (Ong-lâi)", "刺梨", "甘蔗"], correct: 0 },
+            { text: "去日本料理店點餐，日語的「壽司」發音是？", options: ["Sashimi", "Sushi", "Tempura"], correct: 1 },
+            { text: "長輩如果跟醫生說身體「頭眩」，意思是？", options: ["頭痛", "頭暈", "咳嗽"], correct: 1 },
+            { text: "台語形容肚子痛、肚子不舒服，會說？", options: ["胃翻", "腹肚痛 (Pak-tóo-thàng)", "心悶"], correct: 1 },
+            { text: "日語常聽到的「元気 (Genki)」是指什麼意思？", options: ["很有精神、健康", "天氣很好", "脾氣很大"], correct: 0 },
+            { text: "台語形容一個人感冒著涼，會說他？", options: ["流鼻水", "打噴嚏", "寒著 (Kân--tio̍h) / 傷風"], correct: 2 },
+            { text: "日語的「藥」發音是 Kusuri，去藥妝店常看到，它是指？", options: ["糖果", "藥物", "化妝水"], correct: 1 },
+            { text: "台語稱呼自己的「外孫、外孫女」，通常會叫？", options: ["外孫 (Uāi-sun)", "外家", "查某子"], correct: 0 },
+            { text: "日語常聽到的「おじいさん (Ojiisan)」是指誰？", options: ["爸爸", "哥哥", "爺爺 / 外公"], correct: 2 },
+            { text: "日語常聽到的「おばあさん (Obaasan)」是指誰？", options: ["媽媽", "姊姊", "奶奶 / 外婆"], correct: 2 },
+            { text: "台語形容這個小孩子很「乖巧、聽話懂事」，會說？", options: ["乖巧 (Kuai-tshiáu)", "乖乖", "聽話"], correct: 0 },
+            { text: "台語稱呼「太太、老婆」，傳統優雅浪漫的說法是？", options: ["牽手 (Khan-tshiú)", "查某人", "內人"], correct: 0 },
+            { text: "稱讚長輩台語講得「很流利、很順暢」，可以用哪個詞？", options: ["輪轉 (Liân-tńg)", "好聽", "真快"], correct: 0 },
+            { text: "日語稱讚東西「很好吃」，老一輩最優雅的道地說法是？", options: ["うまい (Umai)", "おいしい (Oishii)", "どちら (Dochira)"], correct: 1 },
+            { text: "台語說買賣遇到的「頭家」，是指生活中的誰？", options: ["員工", "客人", "老闆 / 店主"], correct: 2 },
+            { text: "日語離別時說的「さようなら (Sayonara)」，意思是？", options: ["再見", "謝謝", "對不起"], correct: 0 },
+            { text: "台語形容一個人做事很認真、細心、認真負責，會說他很？", options: ["有錢", "頂真 (Tíng-tsin)", "聰明"], correct: 1 }
         ];
 
         let currentQuestion = 1;
-        const totalQuestions = 3;
-        let currentLang = 'ch'; // ch, en, jp
-        let currentQuizItem = null;
+        const totalQuestions = 5; // 💡 每次進來玩 5 題最剛好，長輩不嫌累
+        let currentQuizSet = [];
         let canClick = true;
 
-        function changeLanguage(lang) {
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn-${lang}`).classList.add('active');
-            currentLang = lang;
-            resetGame();
+        // 隨機從 25 題庫抽 5 題出來
+        function prepareGameQuestions() {
+            let shuffled = [...languageQuizBank].sort(() => Math.random() - 0.5);
+            currentQuizSet = shuffled.slice(0, totalQuestions);
         }
 
         function generateQuestion() {
@@ -103,74 +108,35 @@
             document.getElementById('feedbackText').textContent = "";
             document.getElementById('progressText').textContent = `第 ${currentQuestion} / ${totalQuestions} 題`;
 
-            // 隨機選出一種水果當題目
-            const randomIndex = Math.floor(Math.random() * FRUIT_DATABASE.length);
-            currentQuizItem = FRUIT_DATABASE[randomIndex];
+            // 取得當前題目
+            let currentItem = currentQuizSet[currentQuestion - 1];
+            document.getElementById('questionText').textContent = currentItem.text;
 
-            document.getElementById('targetEmoji').textContent = currentQuizItem.emoji;
-
-            // 挑選另外兩個錯誤答案
-            let pool = FRUIT_DATABASE.filter(item => item.id !== currentQuizItem.id);
-            pool.sort(() => Math.random() - 0.5);
-            let wrong1 = pool[0];
-            let wrong2 = pool[1];
-
-            let options = [currentQuizItem, wrong1, wrong2];
-            options.sort(() => Math.random() - 0.5);
-
-            // 渲染選項按鈕
+            // 渲染三個生活選項
             const grid = document.getElementById('optionsGrid');
             grid.innerHTML = '';
 
-            options.forEach(item => {
+            currentItem.options.forEach((optText, index) => {
                 const btn = document.createElement('button');
                 btn.classList.add('option-card');
+                btn.textContent = optText;
                 
-                // 根據當前語言顯示文字
-                if (currentLang === 'ch') btn.innerHTML = item.ch;
-                if (currentLang === 'en') btn.innerHTML = item.en;
-                if (currentLang === 'jp') btn.innerHTML = item.jp;
-
-                btn.onclick = () => checkAnswer(item, btn);
+                // 判斷是否為正確索引
+                let isCorrect = (index === currentItem.correct);
+                btn.onclick = () => checkAnswer(isCorrect, btn);
                 grid.appendChild(btn);
             });
-
-            // 自動播放一次聲音
-            setTimeout(() => { playSound(); }, 400);
         }
 
-        function playSound() {
-            if (!currentQuizItem) return;
-            
-            // 取消目前正在播放的所有語音，避免重疊
-            window.speechSynthesis.cancel();
-            
-            const utterance = new SpeechSynthesisUtterance();
-            
-            if (currentLang === 'ch') {
-                utterance.text = currentQuizItem.tts_ch;
-                utterance.lang = 'zh-TW';
-            } else if (currentLang === 'en') {
-                utterance.text = currentQuizItem.tts_en;
-                utterance.lang = 'en-US'; // 標準美式英語
-            } else if (currentLang === 'jp') {
-                utterance.text = currentQuizItem.tts_jp;
-                utterance.lang = 'ja-JP';
-            }
-            
-            utterance.rate = 0.75; // 稍微放慢，讓長輩聽得更清楚
-            window.speechSynthesis.speak(utterance);
-        }
-
-        function checkAnswer(selectedItem, buttonElement) {
+        function checkAnswer(isCorrect, buttonElement) {
             if (!canClick) return;
             canClick = false;
 
             const feedback = document.getElementById('feedbackText');
-            if (selectedItem.id === currentQuizItem.id) {
+            if (isCorrect) {
                 feedback.style.color = "#228B22";
                 feedback.textContent = "⭕ 太厲害了！完全正確！";
-                playCorrectSound(); // 答對立刻叮咚
+                playCorrectSound(); // 播放叮咚聲
                 buttonElement.style.backgroundColor = "#C8E6C9";
                 
                 setTimeout(() => {
@@ -183,7 +149,7 @@
                 }, 1500);
             } else {
                 feedback.style.color = "#D32F2F";
-                feedback.textContent = "❌ 答錯囉，再按一次喇叭聽聽看！";
+                feedback.textContent = "❌ 答錯囉，再動動腦想一下！";
                 buttonElement.style.backgroundColor = "#FFCDD2";
                 setTimeout(() => {
                     buttonElement.style.backgroundColor = "#FFF";
@@ -196,50 +162,54 @@
         function resetGame() {
             document.getElementById('winOverlay').style.display = 'none';
             currentQuestion = 1;
+            prepareGameQuestions();
             generateQuestion();
         }
 
-        // 初始化
+        // 🔔 答對時的清脆叮咚音效 (修復卡死後的安全版本)
+        function playCorrectSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                if (ctx.state === 'suspended') ctx.resume();
+
+                let osc1 = ctx.createOscillator();
+                let gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, ctx.currentTime);
+                gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start();
+                osc1.stop(ctx.currentTime + 0.1);
+
+                setTimeout(() => {
+                    let osc2 = ctx.createOscillator();
+                    let gain2 = ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(659.25, ctx.currentTime);
+                    gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.start();
+                    osc2.stop(ctx.currentTime + 0.25);
+                }, 80);
+            } catch(e) {
+                console.log("音效系統暫緩");
+            }
+        }
+
+        // 啟動遊戲
+        prepareGameQuestions();
         generateQuestion();
 
-        // 🕒 離線時間同步累積
+        // 🕒 大腦運動時間同步計時
         setInterval(() => {
             let currentSeconds = parseInt(localStorage.getItem('game_total_seconds') || '0', 10);
             currentSeconds++;
             localStorage.setItem('game_total_seconds', currentSeconds.toString());
         }, 1000);
-
-        // 🔔 答對時的清脆叮咚音效
-function playCorrectSound() {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') ctx.resume();
-
-    // 第一聲：「叮」（音高 523Hz，持續 0.1 秒）
-    let osc1 = ctx.createOscillator();
-    let gain1 = ctx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5 音符
-    gain1.gain.setValueAtTime(0.2, ctx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-    osc1.connect(gain1);
-    gain1.connect(ctx.destination);
-    osc1.start();
-    osc1.stop(ctx.currentTime + 0.1);
-
-    // 第二聲：「咚」（音高 659Hz，稍微延遲 0.08 秒後發聲，持續 0.25 秒）
-    setTimeout(() => {
-        let osc2 = ctx.createOscillator();
-        let gain2 = ctx.createGain();
-        osc2.type = 'sine';
-        osc2.frequency.setValueAtTime(659.25, ctx.currentTime); // E5 音符
-        gain2.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
-        osc2.connect(gain2);
-        gain2.connect(ctx.destination);
-        osc2.start();
-        osc2.stop(ctx.currentTime + 0.25);
-    }, 80);
-}
     </script>
 </body>
 </html>
