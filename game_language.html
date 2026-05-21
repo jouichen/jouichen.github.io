@@ -170,6 +170,7 @@
             if (selectedItem.id === currentQuizItem.id) {
                 feedback.style.color = "#228B22";
                 feedback.textContent = "⭕ 太厲害了！完全正確！";
+                playCorrectSound(); // 答對立刻叮咚
                 buttonElement.style.backgroundColor = "#C8E6C9";
                 
                 setTimeout(() => {
@@ -207,6 +208,38 @@
             currentSeconds++;
             localStorage.setItem('game_total_seconds', currentSeconds.toString());
         }, 1000);
+
+        // 🔔 答對時的清脆叮咚音效
+function playCorrectSound() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
+
+    // 第一聲：「叮」（音高 523Hz，持續 0.1 秒）
+    let osc1 = ctx.createOscillator();
+    let gain1 = ctx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // C5 音符
+    gain1.gain.setValueAtTime(0.2, ctx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start();
+    osc1.stop(ctx.currentTime + 0.1);
+
+    // 第二聲：「咚」（音高 659Hz，稍微延遲 0.08 秒後發聲，持續 0.25 秒）
+    setTimeout(() => {
+        let osc2 = ctx.createOscillator();
+        let gain2 = ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(659.25, ctx.currentTime); // E5 音符
+        gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain2.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+        osc2.connect(gain2);
+        gain2.connect(ctx.destination);
+        osc2.start();
+        osc2.stop(ctx.currentTime + 0.25);
+    }, 80);
+}
     </script>
 </body>
 </html>
